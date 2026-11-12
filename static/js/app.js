@@ -6029,6 +6029,55 @@ const app = createApp({
       }
     };
 
+    const updateStartupOrderMonths = async (m) => {
+      startupOrderMonths.value = m;
+      await fetchStartupOrder();
+    };
+
+    const removeStartupOrderItem = (idx) => {
+      startupOrderItems.value.splice(idx, 1);
+    };
+
+    const openAddStartupItemModal = () => {
+      newStartupItemForm.value = {
+        product: '',
+        article_nr: '',
+        category: 'Smeermiddelen',
+        packaging: '1 x eenheid',
+        qty: 1,
+        net_unit_price: 0,
+        purchase_unit: 0,
+        item_type: 'Handmatig'
+      };
+      showAddStartupItemModal.value = true;
+    };
+
+    const submitAddStartupItem = () => {
+      if (!newStartupItemForm.value.product) {
+        alert('Vul a.u.b. een productnaam of omschrijving in.');
+        return;
+      }
+      const qty = parseInt(newStartupItemForm.value.qty, 10) || 1;
+      const net_unit_price = parseFloat(newStartupItemForm.value.net_unit_price) || 0;
+      const purchase_unit = parseFloat(newStartupItemForm.value.purchase_unit) || 0;
+      startupOrderItems.value.push({
+        item_type: newStartupItemForm.value.item_type || 'Handmatig',
+        article_nr: newStartupItemForm.value.article_nr || '',
+        product: newStartupItemForm.value.product,
+        description: newStartupItemForm.value.product,
+        category: newStartupItemForm.value.category || 'Overig',
+        packaging: newStartupItemForm.value.packaging || '1 x eenheid',
+        required_volume_formatted: '-',
+        qty: qty,
+        net_unit_price: net_unit_price,
+        purchase_unit: purchase_unit,
+        total_sales: Math.round(qty * net_unit_price * 100) / 100,
+        total_purchase: Math.round(qty * purchase_unit * 100) / 100,
+        notes: 'Handmatig toegevoegd'
+      });
+      showAddStartupItemModal.value = false;
+    };
+
     const exportStartupOrderExcel = async () => {
       if (!startupOrderContract.value.customer || !startupOrderContract.value.contract_name) return;
       if (isCloudMode && typeof XLSX !== 'undefined') {

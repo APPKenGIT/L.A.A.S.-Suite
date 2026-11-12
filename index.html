@@ -43,6 +43,19 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <!-- SheetJS for Client-Side Excel Exports -->
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <script>
+    window.addEventListener('error', function(e) {
+      console.error('App initialization error:', e.error || e.message);
+      var appEl = document.getElementById('app');
+      if (appEl && appEl.hasAttribute('v-cloak')) {
+        appEl.removeAttribute('v-cloak');
+        var b = document.createElement('div');
+        b.style = 'background:#fef2f2;border:1px solid #f87171;color:#991b1b;padding:16px;margin:16px;border-radius:8px;font-family:sans-serif;font-weight:bold;';
+        b.innerHTML = 'Initialisatiefout: ' + (e.message || 'Onbekende fout') + ' (regel: ' + (e.lineno || '') + ')';
+        document.body.prepend(b);
+      }
+    });
+  </script>
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased min-h-screen">
 <div id="app" v-cloak class="min-h-screen flex flex-col">
@@ -5482,6 +5495,6 @@
 </div>
 
 <!-- Vue App Logic Script -->
-<script src="static/js/app.js?v=20261112_02"></script>
+<script src="static/js/app.js?v=20261112_03"></script>
 </body>
 </html>
