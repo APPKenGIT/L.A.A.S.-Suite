@@ -1,0 +1,28 @@
+{
+  "indexation": {
+    "active": false,
+    "categories": [
+      "Olien ",
+      "Food Olien",
+      "Vetten",
+      "Food Vetten",
+      "Reinigers"
+    ],
+    "effective_date": "",
+    "log": [],
+    "note": "",
+    "percentage": 0,
+    "type": "general"
+  },
+  "temporary_surcharge": {
+    "active": true,
+    "categories": [
+      "Olien ",
+      "Food Olien",
+      "Vetten",
+      "Food Vetten"
+    ],
+    "name": "Grondstoffentoeslag Olie (Straat van Hormuz)",
+    "percentage": 5
+  }
+}
