@@ -165,6 +165,15 @@ const app = createApp({
 
     // Security
 
+    // App Authentication Gate
+    const isAuthenticated = ref(false);
+    const loginPassword = ref('');
+    const showLoginPassword = ref(false);
+    const loginError = ref(false);
+    const loginErrorMessage = ref('');
+    const loginLoading = ref(false);
+    const rememberMe = ref(true);
+
     const isUnlocked = ref(false);
 
     const showPasswordModal = ref(false);
@@ -730,6 +739,82 @@ const app = createApp({
 
       showToast('Beheerdersmodus vergrendeld');
 
+    };
+
+    const loginApp = async () => {
+      loginLoading.value = true;
+      loginError.value = false;
+      loginErrorMessage.value = '';
+      const val = (loginPassword.value || '').trim();
+      if (!val) {
+        loginError.value = true;
+        loginErrorMessage.value = 'Voer een wachtwoord in';
+        loginLoading.value = false;
+        return;
+      }
+
+      if (isCloudMode) {
+        const valid = ['1nt3rfl0n', 'laas2026', 'interflon', 'Interflon', 'Interflon2026'];
+        if (valid.includes(val)) {
+          isAuthenticated.value = true;
+          isUnlocked.value = true;
+          if (rememberMe.value) {
+            localStorage.setItem('laas_authenticated', 'true');
+          } else {
+            sessionStorage.setItem('laas_authenticated', 'true');
+          }
+          loginPassword.value = '';
+          loginLoading.value = false;
+          showToast('Succesvol aangemeld bij L.A.A.S. Suite', 'success');
+          await loadInitialAppData();
+          return;
+        } else {
+          loginError.value = true;
+          loginErrorMessage.value = 'Onjuist wachtwoord. Probeer het opnieuw.';
+          loginLoading.value = false;
+          return;
+        }
+      }
+
+      try {
+        const res = await fetch('/api/verify_password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: val })
+        });
+        if (res.ok) {
+          isAuthenticated.value = true;
+          isUnlocked.value = true;
+          if (rememberMe.value) {
+            localStorage.setItem('laas_authenticated', 'true');
+          } else {
+            sessionStorage.setItem('laas_authenticated', 'true');
+          }
+          loginPassword.value = '';
+          loginLoading.value = false;
+          showToast('Succesvol aangemeld bij L.A.A.S. Suite', 'success');
+          await loadInitialAppData();
+        } else {
+          loginError.value = true;
+          loginErrorMessage.value = 'Onjuist wachtwoord. Probeer het opnieuw.';
+          loginLoading.value = false;
+        }
+      } catch (err) {
+        loginError.value = true;
+        loginErrorMessage.value = 'Netwerkfout bij inloggen.';
+        loginLoading.value = false;
+      }
+    };
+
+    const logoutApp = () => {
+      isAuthenticated.value = false;
+      isUnlocked.value = false;
+      initialDataLoaded.value = false;
+      sessionStorage.removeItem('laas_authenticated');
+      localStorage.removeItem('laas_authenticated');
+      loginPassword.value = '';
+      loginError.value = false;
+      showToast('U bent succesvol uitgelogd');
     };
 
     // Creation helpers
@@ -6302,21 +6387,44 @@ const app = createApp({
       }
     };
 
+    const initialDataLoaded = ref(false);
+    const loadInitialAppData = async () => {
+      if (initialDataLoaded.value) return;
+      try {
+        await Promise.all([
+          fetchHierarchy(),
+          fetchGlobalPriceList(),
+          fetchStandardPackages(),
+          fetchSuiteSettings(),
+          fetchArchive()
+        ]);
+        initialDataLoaded.value = true;
+      } catch (err) {
+        console.error('Error loading initial app data:', err);
+      }
+    };
+
     onMounted(async () => {
-
-      await fetchHierarchy();
-
-      await fetchGlobalPriceList();
-
-      await fetchStandardPackages();
-
-      await fetchSuiteSettings();
-
-      await fetchArchive();
-
+      const storedAuth = sessionStorage.getItem('laas_authenticated') || localStorage.getItem('laas_authenticated');
+      if (storedAuth === 'true') {
+        isAuthenticated.value = true;
+        isUnlocked.value = true;
+        await loadInitialAppData();
+      }
     });
 
     return {
+
+      // Authentication Gate
+      isAuthenticated,
+      loginPassword,
+      showLoginPassword,
+      loginError,
+      loginErrorMessage,
+      loginLoading,
+      rememberMe,
+      loginApp,
+      logoutApp,
 
       // Project Opvolging & P&L Tracking
 
