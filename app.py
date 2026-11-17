@@ -215,7 +215,8 @@ def upload_ilac(klant, afdeling, contract_name):
         manual_items=manual_items,
         gram_per_pompslag=g_factor,
         ml_per_second=ml_factor,
-        packaging_overrides=dossier.get('packaging_overrides', {})
+        packaging_overrides=dossier.get('packaging_overrides', {}),
+            manual_product_overrides=dossier.get('manual_product_overrides', {})
     )
 
     dossier['ilac_calculation'] = {
@@ -268,7 +269,8 @@ def recalculate_ilac(klant, afdeling, contract_name):
             manual_items=manual_items,
             gram_per_pompslag=g_factor,
             ml_per_second=ml_factor,
-            packaging_overrides=dossier.get('packaging_overrides', {})
+            packaging_overrides=dossier.get('packaging_overrides', {}),
+            manual_product_overrides=dossier.get('manual_product_overrides', {})
         )
         dossier['ilac_calculation']['contract_years'] = years
         dossier['ilac_calculation']['summary'] = calc_res['summary']
@@ -323,6 +325,7 @@ def override_product_units(klant, afdeling, contract_name):
             gram_per_pompslag=g_factor,
             ml_per_second=ml_factor,
             packaging_overrides=dossier.get('packaging_overrides', {}),
+            manual_product_overrides=dossier.get('manual_product_overrides', {}),
             units_overrides=dossier.get('units_overrides', {}),
             tier_overrides=dossier.get('tier_overrides', {}),
             global_discount_pct=dossier.get('settings', {}).get('global_discount_pct'),
@@ -374,6 +377,7 @@ def override_product_tier(klant, afdeling, contract_name):
             gram_per_pompslag=g_factor,
             ml_per_second=ml_factor,
             packaging_overrides=dossier.get('packaging_overrides', {}),
+            manual_product_overrides=dossier.get('manual_product_overrides', {}),
             units_overrides=dossier.get('units_overrides', {}),
             tier_overrides=dossier.get('tier_overrides', {}),
             global_discount_pct=dossier.get('settings', {}).get('global_discount_pct'),
@@ -475,6 +479,62 @@ def override_product_packaging(klant, afdeling, contract_name):
     store.save_dossier(klant, afdeling, contract_name, dossier)
     return jsonify({"status": "success", "dossier": dossier})
 
+
+@app.route('/api/contract/<klant>/<afdeling>/<contract_name>/product/manual_override', methods=['POST'])
+def manual_product_override(klant, afdeling, contract_name):
+    data = request.json or {}
+    combo_key = data.get('combo_key')
+    prod_name = data.get('product_name')
+    tool_name = data.get('tool')
+    article_nr = str(data.get('article_nr', '')).strip()
+    packaging = str(data.get('packaging', '')).strip()
+    try:
+        unit_price = float(data.get('unit_price', 0.0))
+    except (ValueError, TypeError):
+        unit_price = 0.0
+    try:
+        discount_pct = float(data.get('discount_pct', 0.0))
+    except (ValueError, TypeError):
+        discount_pct = 0.0
+    dossier = store.get_dossier(klant, afdeling, contract_name)
+    if not dossier:
+        return jsonify({"error": "Contract niet gevonden"}), 404
+    m_overrides = dossier.setdefault('manual_product_overrides', {})
+    key = combo_key or (f"{prod_name}___{tool_name}" if tool_name else prod_name)
+    m_overrides[key] = {
+        'article_nr': article_nr,
+        'packaging': packaging,
+        'unit_price': unit_price,
+        'discount_pct': discount_pct
+    }
+    if prod_name:
+        m_overrides[prod_name] = m_overrides[key]
+    points = dossier.get('ilac_points') or dossier.get('ilac_calculation', {}).get('points', [])
+    years = dossier.get('settings', {}).get('duration_years', 3)
+    pl_items = dossier.get('price_list', {}).get('items') or store.get_global_pricelist().get('items', [])
+    manual_items = dossier.get('fase2', {}).get('manual_items', [])
+    g_factor = float(dossier.get('settings', {}).get('gram_per_pompslag', 1.5))
+    ml_factor = float(dossier.get('settings', {}).get('ml_per_second', 1.0))
+    calc_res = calculate_ilac_requirements(
+        points,
+        contract_years=years,
+        pricelist_items=pl_items,
+        manual_items=manual_items,
+        gram_per_pompslag=g_factor,
+        ml_per_second=ml_factor,
+        packaging_overrides=dossier.get('packaging_overrides', {}),
+        units_overrides=dossier.get('units_overrides', {}),
+        tier_overrides=dossier.get('tier_overrides', {}),
+        global_discount_pct=dossier.get('settings', {}).get('global_discount_pct'),
+        category_discounts=dossier.get('settings', {}).get('category_discounts'),
+        manual_product_overrides=m_overrides
+    )
+    dossier.setdefault('ilac_calculation', {})
+    dossier['ilac_calculation']['summary'] = calc_res['summary']
+    dossier['ilac_calculation']['aggregated_products'] = calc_res['aggregated_products']
+    calculate_fase2_proposal(dossier)
+    store.save_dossier(klant, afdeling, contract_name, dossier)
+    return jsonify({"success": True, "dossier": dossier})
 @app.route('/api/contract/<klant>/<afdeling>/<contract_name>/manual-items/add', methods=['POST'])
 def add_manual_item_dashed(klant, afdeling, contract_name):
     data = request.json or {}
@@ -595,6 +655,7 @@ def save_settings(klant, afdeling, contract_name):
             gram_per_pompslag=g_factor,
             ml_per_second=ml_factor,
             packaging_overrides=dossier.get('packaging_overrides', {}),
+            manual_product_overrides=dossier.get('manual_product_overrides', {}),
             units_overrides=dossier.get('units_overrides', {}),
             tier_overrides=dossier.get('tier_overrides', {}),
             global_discount_pct=dossier.get('settings', {}).get('global_discount_pct'),
@@ -657,7 +718,8 @@ def upload_pricelist(klant, afdeling, contract_name):
     if points:
         years = int(dossier.get('settings', {}).get('duration_years', 3))
         manual_items = dossier.get('ilac_calculation', {}).get('manual_items', [])
-        calc_res = calculate_ilac_requirements(points, contract_years=years, pricelist_items=pl_data['items'], manual_items=manual_items, packaging_overrides=dossier.get('packaging_overrides', {}))
+        calc_res = calculate_ilac_requirements(points, contract_years=years, pricelist_items=pl_data['items'], manual_items=manual_items, packaging_overrides=dossier.get('packaging_overrides', {}),
+            manual_product_overrides=dossier.get('manual_product_overrides', {}))
         dossier['ilac_calculation']['summary'] = calc_res['summary']
         dossier['ilac_calculation']['aggregated_products'] = calc_res['aggregated_products']
         dossier['settings']['fee_per_month'] = calc_res['summary']['calculated_monthly_fee']
@@ -690,7 +752,8 @@ def update_item_discount(klant, afdeling, contract_name):
     if points:
         years = int(dossier.get('settings', {}).get('duration_years', 3))
         manual_items = dossier.get('ilac_calculation', {}).get('manual_items', [])
-        calc_res = calculate_ilac_requirements(points, contract_years=years, pricelist_items=items, manual_items=manual_items, packaging_overrides=dossier.get('packaging_overrides', {}))
+        calc_res = calculate_ilac_requirements(points, contract_years=years, pricelist_items=items, manual_items=manual_items, packaging_overrides=dossier.get('packaging_overrides', {}),
+            manual_product_overrides=dossier.get('manual_product_overrides', {}))
         dossier['ilac_calculation']['summary'] = calc_res['summary']
         dossier['ilac_calculation']['aggregated_products'] = calc_res['aggregated_products']
         dossier['settings']['fee_per_month'] = calc_res['summary']['calculated_monthly_fee']

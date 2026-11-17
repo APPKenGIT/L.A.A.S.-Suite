@@ -308,7 +308,7 @@ def match_tool_to_pricelist(tool_name, pricelist_items):
 def find_candidate_packagings(prod_name, pricelist_items, tool_name=None):
     """
     Finds and ranks all candidate packaging items from the pricelist for a specific product.
-    Includes all available packaging types for that product line so the user can freely override,
+    Includes only available packaging types for that exact product line so dropdowns remain strictly isolated,
     while ranking the most suitable tool-packaging at the top as recommended default.
     """
     if not pricelist_items or not prod_name:
@@ -318,46 +318,70 @@ def find_candidate_packagings(prod_name, pricelist_items, tool_name=None):
     base_name, is_aerosol = normalize_product_name(prod_name)
     tool_lower = (tool_name or '').lower()
 
+    is_service_pack = 'service pack' in tool_lower or 'servicepack' in tool_lower or 'service pack' in p_clean or 'servicepack' in p_clean
+    is_ispl = ('single point lubricator' in tool_lower or 'ispl' in tool_lower or 'spl' in tool_lower or
+               'single point lubricator' in p_clean or 'ispl' in p_clean) and not is_service_pack
+
     wants_aerosol = is_aerosol or any(w in tool_lower for w in ['spuitbus', 'aerosol', 'spray'])
     wants_lube_shuttle = any(w in p_clean for w in ['ls', 'lube-shuttle', 'shuttle']) or 'accugreaser' in tool_lower
     wants_bulk = any(w in tool_lower for w in ['vulpomp', 'cls filler', 'oliekan', 'vatpomp', 'bulk'])
-    wants_spl = any(w in tool_lower for w in ['single point lubricator', 'service pack', 'spl'])
 
-    # Helper to clean tokens and identify distinctive product codes (e.g. g100, htg, mp00, mp2/3, fluor)
-    def clean_name_tokens(name):
-        n = re.sub(r'[\(\[\{].*?[\)\]\}]', '', str(name or '').lower().replace('interflon', ''))
-        n = re.sub(r'\s*-\s*(ls|lube-shuttle|shuttle|service pack|vulpomp)', '', n, flags=re.IGNORECASE)
-        toks = [w for w in re.split(r'[\s\-_/]+', n) if w and w not in ['the', 'and', 'for', 'de', 'en', 'van']]
-        return toks
-
-    p_toks = clean_name_tokens(prod_name)
-    generic_words = {'oil', 'grease', 'lube', 'vet', 'olie'}
-    dist_toks = [w for w in p_toks if w not in generic_words]
-    if not dist_toks:
-        dist_toks = p_toks
-
-    # 1. Collect all pricelist items matching this specific product line
     all_packagings = []
     seen_articles = set()
 
-    for it in pricelist_items:
-        it_full_name = f"{it.get('description', '')} {it.get('product_name', '')}"
-        it_toks = set(clean_name_tokens(it_full_name))
-        it_lower = it_full_name.lower()
-        art_nr = str(it.get('article_nr', '')).strip()
-
-        is_match = False
-        if all(d in it_toks or d in it_lower for d in dist_toks):
-            # Oil vs Grease sanity check to prevent cross-matching
-            if 'grease' in p_toks and 'oil' in it_toks and 'grease' not in it_toks:
-                continue
-            if 'oil' in p_toks and 'grease' in it_toks and 'oil' not in it_toks:
-                continue
-            is_match = True
-
-        if is_match and art_nr and art_nr not in seen_articles:
-            seen_articles.add(art_nr)
-            all_packagings.append(it)
+    if is_service_pack:
+        # Dedicated matching for Servicepacks (e.g. Pulsarlube): look in category 'Automatic lubrication' / 'Servicepacks'
+        lubricant_code = re.sub(r'service\s*pack', '', base_name, flags=re.IGNORECASE).strip()
+        lub_toks = [w for w in re.split(r'[\s\-_/]+', lubricant_code) if w and w not in ['grease', 'oil', 'lube', 'vet', 'olie', 'stuks']]
+        
+        for it in pricelist_items:
+            desc = it.get('description', '').lower()
+            cat = it.get('category', '').lower()
+            art = str(it.get('article_nr', '')).strip()
+            
+            if ('servicepack' in desc or 'service pack' in desc or 'servicepack' in cat):
+                if lub_toks and all(tok in desc for tok in lub_toks):
+                    if art and art not in seen_articles:
+                        seen_articles.add(art)
+                        all_packagings.append(it)
+                        
+    elif is_ispl:
+        # Dedicated matching for Single Point Lubricators (ISPL):
+        # ISPL is distinct from Service pack. An ISPL with Grease HTG did NOT exist.
+        lubricant_code = re.sub(r'single\s*point\s*lubricator|ispl|125ml|60ml|250ml', '', base_name, flags=re.IGNORECASE).strip()
+        lub_toks = [w for w in re.split(r'[\s\-_/]+', lubricant_code) if w and w not in ['grease', 'oil', 'lube', 'vet', 'olie', 'stuks']]
+        
+        for it in pricelist_items:
+            desc = it.get('description', '').lower()
+            pn = it.get('product_name', '').lower()
+            art = str(it.get('article_nr', '')).strip()
+            
+            if ('single point lubricator' in desc or 'single point lubricator' in pn) and 'servicepack' not in desc:
+                # Exclude spare parts and brackets
+                if any(acc in desc for acc in ['leeg', 'batterij', 'terugslagventiel', 'filling set', 'bracket', 'connect']):
+                    continue
+                if lub_toks and all(tok in desc for tok in lub_toks):
+                    if art and art not in seen_articles:
+                        seen_articles.add(art)
+                        all_packagings.append(it)
+                        
+    else:
+        # Standard product matching: strict product-line isolation on base product name
+        for it in pricelist_items:
+            it_pname = it.get('product_name', '')
+            it_base, _ = normalize_product_name(it_pname)
+            art = str(it.get('article_nr', '')).strip()
+            
+            if it_base and it_base == base_name:
+                if art and art not in seen_articles:
+                    seen_articles.add(art)
+                    all_packagings.append(it)
+            elif not it_base:
+                desc = it.get('description', '').lower()
+                if desc.startswith(base_name + ' -') or desc.startswith(base_name + ' ('):
+                    if art and art not in seen_articles:
+                        seen_articles.add(art)
+                        all_packagings.append(it)
 
     # 2. Score and sort candidates so the tool preference ranks first
     def score_packaging(m):
@@ -369,7 +393,21 @@ def find_candidate_packagings(prod_name, pricelist_items, tool_name=None):
         is_it_aerosol = it_aero or 'spuitbus' in pkg or 'aerosol' in pkg or 'spuitbus' in desc
 
         score = 0
-        if wants_lube_shuttle:
+        if is_service_pack:
+            if '250 ml' in tool_lower and '250 ml' in desc: score += 120
+            elif '60 ml' in tool_lower and '60 ml' in desc: score += 120
+            elif '125 ml' in tool_lower and '125 ml' in desc: score += 120
+            elif '500 ml' in tool_lower and '500 ml' in desc: score += 120
+            else: score += 50
+        elif is_ispl:
+            if '125' in tool_lower or '125' in p_clean:
+                if '125 ml' in desc: score += 120
+            elif '60' in tool_lower or '60' in p_clean:
+                if '60 ml' in desc: score += 120
+            elif '250' in tool_lower or '250' in p_clean:
+                if '250 ml' in desc: score += 120
+            score += 50
+        elif wants_lube_shuttle:
             if 'lube-shuttle' in pkg or 'shuttle' in pkg or 'lube-shuttle' in desc:
                 score += 100
             elif 'patroon' in pkg or 'patr' in pkg or 'cartridge' in pkg:
@@ -379,18 +417,12 @@ def find_candidate_packagings(prod_name, pricelist_items, tool_name=None):
                 score += 100
             if any(w in cnt for w in ['13 liter', '16 kg', '20 l', '20 liter', '50 kg', '60 l', '120 kg', '180 kg', '200 l']):
                 score += 60
-        elif wants_spl:
-            if any(w in pkg for w in ['spl', 'service pack', 'cartridge']) or any(w in desc for w in ['servicepack', 'single point lubricator']):
-                score += 100
-            if any(w in cnt for w in ['60 ml', '125 ml', '250 ml', '15 ml']):
-                score += 60
         elif wants_aerosol:
             if is_it_aerosol:
                 score += 100
-
-        # General preference bonus if not aerosol wanted and not aerosol item
-        if not wants_aerosol and not is_it_aerosol:
-            score += 20
+        else:
+            if not is_it_aerosol:
+                score += 20
         return score
 
     all_packagings.sort(key=score_packaging, reverse=True)
@@ -399,7 +431,8 @@ def find_candidate_packagings(prod_name, pricelist_items, tool_name=None):
 def calculate_ilac_requirements(points, contract_years=3, pricelist_items=None, manual_items=None, 
                                 gram_per_pompslag=1.5, ml_per_second=1.0, packaging_overrides=None,
                                 units_overrides=None, tier_overrides=None,
-                                global_discount_pct=None, category_discounts=None):
+                                global_discount_pct=None, category_discounts=None,
+                                manual_product_overrides=None):
     """
     Calculates product requirements, packaging counts, and tiered costs over contract_years.
     Groups points by (Product x Tool) matrix to allow precise packaging attribution.
@@ -507,7 +540,12 @@ def calculate_ilac_requirements(points, contract_years=3, pricelist_items=None, 
                 })
                 ann_vol = (count * vol_std) / years
             else:
-                ann_vol = count * vol_std * freq
+                is_discrete_cartridge = ('vervangen' in tname.lower() or 'service pack' in tool.lower() or 'single point lubricator' in tool.lower() or 'ispl' in tool.lower() or 'service pack' in prod.lower() or std_unit == 'stuks')
+                if is_discrete_cartridge and interval_d >= 14:
+                    calc_freq = round(365.0 / interval_d)
+                else:
+                    calc_freq = freq
+                ann_vol = count * vol_std * calc_freq
                 
             product_totals[combo_key]['annual_volume'] += ann_vol
             product_totals[combo_key]['tasks_summary'][tname] = product_totals[combo_key]['tasks_summary'].get(tname, 0) + count
@@ -547,7 +585,12 @@ def calculate_ilac_requirements(points, contract_years=3, pricelist_items=None, 
         else:
             norm_vol = tot_vol
             
-        if candidates and not is_aerosol_prod:
+        is_sp_line = 'service pack' in tool_name.lower() or 'servicepack' in tool_name.lower() or 'service pack' in prod_name.lower() or 'servicepack' in prod_name.lower()
+        is_ispl_line = ('single point lubricator' in tool_name.lower() or 'ispl' in prod_name.lower() or 'spl' in tool_name.lower()) and not is_sp_line
+        wants_lube_shuttle = any(w in prod_name.lower() for w in ['ls', 'lube-shuttle', 'shuttle']) or 'accugreaser' in tool_name.lower()
+        is_restricted_pack = is_sp_line or is_ispl_line or wants_lube_shuttle or 'service pack' in tool_name.lower() or 'single point lubricator' in tool_name.lower()
+
+        if candidates and not is_aerosol_prod and not is_restricted_pack:
             for cand in candidates:
                 cand_vol = cand.get('volume_val', 1.0)
                 if norm_vol > 50 and cand_vol >= 10:
@@ -606,7 +649,21 @@ def calculate_ilac_requirements(points, contract_years=3, pricelist_items=None, 
 
         packs_needed = 0
         if tot_vol > 0:
-            if prod_unit == pack_u:
+            if is_sp_line or is_ispl_line or prod_unit == 'stuks' or 'service pack' in tool_name.lower() or 'single point lubricator' in tool_name.lower():
+                if prod_unit == 'stuks':
+                    packs_needed = int(round(tot_vol))
+                elif '250' in packaging_desc or '250' in tool_name:
+                    packs_needed = int(round(tot_vol / 250.0))
+                elif '125' in packaging_desc or '125' in tool_name:
+                    packs_needed = int(round(tot_vol / 125.0))
+                elif '60' in packaging_desc or '60' in tool_name:
+                    packs_needed = int(round(tot_vol / 60.0))
+                elif '500' in packaging_desc or '500' in tool_name:
+                    packs_needed = int(round(tot_vol / 500.0))
+                else:
+                    packs_needed = int(round(tot_vol / (pack_val * 1000.0 if pack_u == 'L' else (pack_val if pack_val > 0 else 1.0))))
+                packs_needed = max(1, packs_needed)
+            elif prod_unit == pack_u:
                 packs_needed = math.ceil(tot_vol / pack_val) if pack_val > 0 else math.ceil(tot_vol)
             elif prod_unit == 'ml' and pack_u == 'L':
                 packs_needed = math.ceil((tot_vol / 1000.0) / pack_val) if pack_val > 0 else math.ceil(tot_vol / 1000.0)
@@ -650,6 +707,36 @@ def calculate_ilac_requirements(points, contract_years=3, pricelist_items=None, 
                 base_price = float(matched_item.get('unit_price', 0.0))
                 unit_net_price = round(base_price * (1.0 - discount_pct / 100.0), 2)
                 tiers = [{'min_qty': 1, 'unit_price': base_price}]
+
+        is_missing_article = False
+        missing_reason = ''
+        is_manual_product = False
+
+        if manual_product_overrides and isinstance(manual_product_overrides, dict):
+            m_data = manual_product_overrides.get(combo_key) or manual_product_overrides.get(prod_name)
+            if m_data and isinstance(m_data, dict):
+                if m_data.get('article_nr'):
+                    art_nr = str(m_data.get('article_nr'))
+                if m_data.get('packaging'):
+                    packaging_desc = str(m_data.get('packaging'))
+                if m_data.get('unit_price') is not None and float(m_data.get('unit_price', 0.0)) > 0:
+                    base_price = float(m_data.get('unit_price', 0.0))
+                    discount_pct = float(m_data.get('discount_pct', discount_pct))
+                    unit_net_price = round(base_price * (1.0 - discount_pct / 100.0), 2)
+                if m_data.get('category'):
+                    item_category = str(m_data.get('category'))
+                is_manual_product = True
+
+        if not is_manual_product:
+            if matched_item is None or art_nr in ['-', '', None] or base_price == 0.0:
+                is_missing_article = True
+                if is_ispl_line:
+                    clean_p = prod_name.replace("Interflon Single Point Lubricator", "").replace("Interflon", "").strip()
+                    missing_reason = f"ISPL met {clean_p} bestaat nog niet in catalogus - manueel invullen"
+                elif is_sp_line:
+                    missing_reason = "Servicepack bestaat nog niet in catalogus - manueel invullen"
+                else:
+                    missing_reason = "Product / verpakking bestaat nog niet in catalogus - manueel invullen"
 
         line_total = round(packs_needed * unit_net_price, 2)
         total_products_cost += line_total
@@ -704,6 +791,9 @@ def calculate_ilac_requirements(points, contract_years=3, pricelist_items=None, 
             'active_tier_min': active_tier_min,
             'is_manual_units': is_manual_units,
             'is_manual_tier': is_manual_tier,
+            'is_manual_product': is_manual_product,
+            'is_missing_article': is_missing_article,
+            'missing_reason': missing_reason,
             'tasks_breakdown': pdata['tasks_summary'],
             'long_interval_points': pdata['long_interval_points']
         })

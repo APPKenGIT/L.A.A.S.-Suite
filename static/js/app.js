@@ -1775,6 +1775,114 @@ const app = createApp({
 
     };
 
+    const isProductIncomplete = (prod) => {
+      if (!prod) return false;
+      if (prod.is_missing_article) return true;
+      if (!prod.article_nr || prod.article_nr === '-' || prod.article_nr === '') return true;
+      if (!prod.packaging || prod.packaging === 'Standaard verpakking' || prod.packaging === 'Geen bestaande verpakking') return true;
+      if (prod.base_unit_price === 0 || !prod.base_unit_price) return true;
+      return false;
+    };
+
+    const showManualProductModal = ref(false);
+    const editingManualProduct = ref(null);
+    const manualProductForm = ref({
+      article_nr: '',
+      packaging: '',
+      unit_price: 0,
+      discount_pct: 0
+    });
+
+    const openManualProductEditModal = (prod) => {
+      if (!prod) return;
+      editingManualProduct.value = prod;
+      manualProductForm.value = {
+        article_nr: (prod.article_nr && prod.article_nr !== '-') ? prod.article_nr : '',
+        packaging: (prod.packaging && prod.packaging !== 'Standaard verpakking') ? prod.packaging : '',
+        unit_price: prod.base_unit_price || 0,
+        discount_pct: prod.discount_pct || 0
+      };
+      showManualProductModal.value = true;
+    };
+
+    const closeManualProductModal = () => {
+      showManualProductModal.value = false;
+      editingManualProduct.value = null;
+    };
+
+    const saveManualProductOverride = async () => {
+      if (!editingManualProduct.value || !dossier.value) return;
+      const prod = editingManualProduct.value;
+      const payload = {
+        combo_key: prod.combo_key || null,
+        product_name: prod.product_name,
+        tool: prod.tool || null,
+        article_nr: manualProductForm.value.article_nr,
+        packaging: manualProductForm.value.packaging,
+        unit_price: parseFloat(manualProductForm.value.unit_price) || 0,
+        discount_pct: parseFloat(manualProductForm.value.discount_pct) || 0
+      };
+
+      if (isCloudMode) {
+        const mOverrides = dossier.value.manual_product_overrides = dossier.value.manual_product_overrides || {};
+        const key = payload.combo_key || (payload.tool ? `${payload.product_name}___${payload.tool}` : payload.product_name);
+        mOverrides[key] = {
+          article_nr: payload.article_nr,
+          packaging: payload.packaging,
+          unit_price: payload.unit_price,
+          discount_pct: payload.discount_pct
+        };
+        if (payload.product_name) mOverrides[payload.product_name] = mOverrides[key];
+
+        prod.article_nr = payload.article_nr;
+        prod.packaging = payload.packaging;
+        prod.base_unit_price = payload.unit_price;
+        prod.discount_pct = payload.discount_pct;
+        prod.net_unit_price = Math.round(payload.unit_price * (1.0 - payload.discount_pct / 100.0) * 100) / 100;
+        prod.line_total = Math.round((prod.packages_needed || prod.packs_needed || 1) * prod.net_unit_price * 100) / 100;
+        prod.is_missing_article = false;
+        prod.is_manual_product = true;
+
+        if (dossier.value.ilac_calculation?.aggregated_products) {
+          let sumCost = 0;
+          dossier.value.ilac_calculation.aggregated_products.forEach(p => {
+            sumCost += (p.line_total || 0);
+          });
+          if (dossier.value.ilac_calculation.summary) {
+            dossier.value.ilac_calculation.summary.total_products_cost = Math.round(sumCost * 100) / 100;
+          }
+        }
+
+        try {
+          const docId = `${selectedCustomer.value}_${selectedDepartment.value}_${selectedContract.value}`.replace(/\//g, '_');
+          await CloudDB.saveDocument('dossiers', docId, dossier.value);
+        } catch (e) {
+          console.warn("Could not save to CloudDB", e);
+        }
+        closeManualProductModal();
+        showToast(`Product ${prod.product_name} handmatig bijgewerkt!`);
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/contract/${encodeURIComponent(selectedCustomer.value)}/${encodeURIComponent(selectedDepartment.value)}/${encodeURIComponent(selectedContract.value)}/product/manual_override`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok) {
+          dossier.value = data.dossier;
+          closeManualProductModal();
+          showToast(`Product ${prod.product_name} handmatig bijgewerkt!`);
+        } else {
+          alert(data.error || 'Fout bij opslaan handmatige gegevens');
+        }
+      } catch (e) {
+        alert('Netwerkfout bij opslaan handmatige productgegevens');
+      }
+    };
+
     const updateItemDiscount = async (artNr, discountPct) => {
 
       if (!dossier.value) return;
@@ -6723,6 +6831,13 @@ const app = createApp({
       onPriceListFileChange,
 
       overrideProductPackaging,
+      isProductIncomplete,
+      showManualProductModal,
+      editingManualProduct,
+      manualProductForm,
+      openManualProductEditModal,
+      closeManualProductModal,
+      saveManualProductOverride,
 
       updateItemDiscount,
 

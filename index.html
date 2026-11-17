@@ -922,13 +922,19 @@
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
-                  <tr v-for="prod in aggregatedProducts" :key="prod.combo_key || prod.product_name" class="hover:bg-slate-50/70 transition">
+                  <tr v-for="prod in aggregatedProducts" :key="prod.combo_key || prod.product_name" class="transition border-b border-slate-100" :class="isProductIncomplete(prod) ? 'bg-rose-50/90 hover:bg-rose-100/90 border-l-4 border-l-rose-500 text-rose-950' : 'hover:bg-slate-50/70'">
                     <!-- Kolom 1: Product & Categorie -->
                     <td class="py-2.5 px-2">
                       <div class="font-bold text-slate-900 text-xs truncate max-w-[170px]" :title="prod.product_name">{{ prod.product_name }}</div>
                       <div class="text-[10px] text-slate-400 font-mono flex items-center gap-1.5 mt-0.5 truncate max-w-[170px]">
-                        <span>Art. {{ prod.article_nr || '-' }}</span>
+                        <span :class="(!prod.article_nr || prod.article_nr === '-') ? 'text-rose-600 font-bold' : ''">Art. {{ prod.article_nr || '-' }}</span>
                         <span v-if="prod.category" class="truncate">• {{ prod.category }}</span>
+                      </div>
+                      <div v-if="isProductIncomplete(prod)" class="mt-1">
+                        <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-300">
+                          <svg class="w-2.5 h-2.5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                          {{ prod.missing_reason || 'Bestaat nog niet - manueel invullen' }}
+                        </span>
                       </div>
                     </td>
                     <!-- Kolom 2: Dedicated Toepassings-Tool Kolom -->
@@ -967,9 +973,19 @@
                           </option>
                         </select>
                       </div>
-                      <span v-else class="text-slate-600 font-medium text-[11px] truncate block max-w-[165px]">
-                        {{ prod.packaging }} <span v-if="prod.article_nr" class="text-slate-400 font-mono text-[10px]">(Art. {{ prod.article_nr }})</span>
-                      </span>
+                      <div v-else class="flex flex-col gap-1 items-start">
+                        <span class="text-rose-700 font-semibold text-[11px] truncate block max-w-[165px]">
+                          {{ (prod.packaging && prod.packaging !== 'Standaard verpakking') ? prod.packaging : 'Geen verpakking in lijst' }}
+                        </span>
+                        <button 
+                          type="button" 
+                          @click.stop="openManualProductEditModal(prod)" 
+                          class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-600 hover:bg-rose-700 text-white transition inline-flex items-center gap-1 shadow-2xs cursor-pointer"
+                        >
+                          <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                          Manueel invullen
+                        </button>
+                      </div>
                     </td>
                     <!-- Kolom 7: Staffel -->
                     <td class="py-2.5 px-1 text-center whitespace-nowrap">
@@ -1029,8 +1045,19 @@
                       </div>
                     </td>
                     <!-- Kolom 9: Basisprijs -->
-                    <td class="py-2.5 px-1.5 text-right text-slate-500 font-mono text-[11px] whitespace-nowrap">
-                      € {{ formatNum(prod.base_unit_price) }}
+                    <td class="py-2.5 px-1.5 text-right font-mono text-[11px] whitespace-nowrap">
+                      <button 
+                        v-if="isProductIncomplete(prod)" 
+                        type="button" 
+                        @click.stop="openManualProductEditModal(prod)" 
+                        class="text-rose-600 font-bold hover:underline cursor-pointer" 
+                        title="Klik om prijs en artikel manueel in te vullen"
+                      >
+                        € {{ formatNum(prod.base_unit_price) }} (Invullen)
+                      </button>
+                      <span v-else class="text-slate-500">
+                        € {{ formatNum(prod.base_unit_price) }}
+                      </span>
                     </td>
                     <!-- Kolom 10: Korting % -->
                     <td class="py-2.5 px-1 text-center whitespace-nowrap">
@@ -4787,7 +4814,95 @@
 <!-- ===================================================================== -->
     <!-- STAFFEL DETAIL MODAL                                                  -->
     <!-- ===================================================================== -->
-    <div v-if="showStaffelModal && selectedStaffelItem" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+        <!-- Modal: Handmatige Productgegevens Invullen (voor ontbrekende artikelen zoals ISPL Grease HTG) -->
+    <div v-if="showManualProductModal && editingManualProduct" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
+      <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 border border-slate-200">
+        <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center font-bold text-sm">
+              !
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-slate-900">Productgegevens Handmatig Invullen</h3>
+              <p class="text-xs text-slate-500 truncate max-w-xs">{{ editingManualProduct?.product_name }}</p>
+            </div>
+          </div>
+          <button @click="closeManualProductModal" class="text-slate-400 hover:text-slate-600">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+        
+        <div class="space-y-4 py-4 text-xs">
+          <div class="bg-rose-50 border border-rose-200 rounded-xl p-3 text-rose-800">
+            Dit product of deze verpakking bestaat nog niet in de actieve prijslijst. Vul hieronder handmatig de gewenste gegevens in voor de calculatie.
+          </div>
+          
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Artikelnummer</label>
+            <input 
+              v-model="manualProductForm.article_nr" 
+              type="text" 
+              placeholder="bv. 4206 of ISPL-HTG-125" 
+              class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-hidden focus:ring-1 focus:ring-sky-500 font-mono"
+            >
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Verpakkingsomschrijving</label>
+            <input 
+              v-model="manualProductForm.packaging" 
+              type="text" 
+              placeholder="bv. ISPL patroon 125 ml of Servicepack 250 ml" 
+              class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-hidden focus:ring-1 focus:ring-sky-500"
+            >
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">Basisprijs per eenheid (€)</label>
+              <input 
+                v-model.number="manualProductForm.unit_price" 
+                type="number" 
+                step="0.01" 
+                placeholder="0.00" 
+                class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-hidden focus:ring-1 focus:ring-sky-500 font-mono"
+              >
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">Korting %</label>
+              <input 
+                v-model.number="manualProductForm.discount_pct" 
+                type="number" 
+                step="1" 
+                min="0" 
+                max="100" 
+                placeholder="0" 
+                class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-hidden focus:ring-1 focus:ring-sky-500 font-mono"
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-4 border-t border-slate-100">
+          <button 
+            type="button" 
+            @click="closeManualProductModal" 
+            class="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 font-bold hover:bg-slate-50 transition"
+          >
+            Annuleren
+          </button>
+          <button 
+            type="button" 
+            @click="saveManualProductOverride" 
+            class="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold transition shadow-xs"
+          >
+            Opslaan &amp; Herberekenen
+          </button>
+        </div>
+      </div>
+    </div>
+
+<div v-if="showStaffelModal && selectedStaffelItem" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
       <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 space-y-4">
         <div class="flex items-start justify-between">
           <div class="flex items-center gap-3">

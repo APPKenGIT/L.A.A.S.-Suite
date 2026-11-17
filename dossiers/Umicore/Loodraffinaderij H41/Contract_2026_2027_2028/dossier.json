@@ -31,8 +31,8 @@
     "proposal_summary": {
       "contract_years": 3,
       "contract_months": 36,
-      "products_total": 92321.82,
-      "products_annual": 30773.94,
+      "products_total": 100011.33,
+      "products_annual": 33337.11,
       "hardware_total": 30000.0,
       "hardware_annual": 10000.0,
       "work_days_year1": 129,
@@ -52,12 +52,12 @@
       "software_cost": 5850.0,
       "training_cost": 0.0,
       "total_services_cost": 107050.0,
-      "grand_contract_total": 432274.82,
-      "base_monthly_fee": 12007.63,
-      "surcharge_monthly": 121.28,
-      "surcharge_total": 4366.15,
-      "total_monthly_fee": 12128.91,
-      "monthly_fee": 12128.91,
+      "grand_contract_total": 439964.33,
+      "base_monthly_fee": 12221.23,
+      "surcharge_monthly": 127.61,
+      "surcharge_total": 4593.89,
+      "total_monthly_fee": 12348.84,
+      "monthly_fee": 12348.84,
       "surcharge_active": true,
       "surcharge_name": "Grondstoffentoeslag Olie (Straat van Hormuz)",
       "surcharge_percentage": 5.0,
@@ -110,9 +110,9 @@
     "summary": {
       "contract_years": 3,
       "total_points": 1043,
-      "total_products_cost": 92321.82,
-      "total_manual_cost": 0.0,
-      "grand_total_phase1": 92321.82,
+      "total_products_cost": 100011.33,
+      "total_manual_cost": 30000.0,
+      "grand_total_phase1": 130011.33,
       "recurring_execution_minutes_per_year": 48087.1,
       "recurring_execution_hours_per_year": 801.5,
       "one_off_execution_minutes": 13410.0,
@@ -922,6 +922,9 @@
         "active_tier_min": 12,
         "is_manual_units": false,
         "is_manual_tier": false,
+        "is_manual_product": false,
+        "is_missing_article": false,
+        "missing_reason": "",
         "tasks_breakdown": {
           "Smeren": 20
         },
@@ -1046,6 +1049,9 @@
         "active_tier_min": 1,
         "is_manual_units": false,
         "is_manual_tier": false,
+        "is_manual_product": false,
+        "is_missing_article": false,
+        "missing_reason": "",
         "tasks_breakdown": {
           "Oliewissel": 4
         },
@@ -1159,36 +1165,6 @@
                 "unit_price": 1236.0
               }
             ]
-          },
-          {
-            "article_nr": "1053",
-            "description": "Interflon Single Point Lubricator - 30 ml - Single Point Lubricator + Food lube G220",
-            "packaging": "30 ml stuks",
-            "unit_price": 55.8,
-            "net_price": 55.8,
-            "volume_val": 0.03,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 55.8
-              }
-            ]
-          },
-          {
-            "article_nr": "1606",
-            "description": "Naamplaatjes - Food lube G220",
-            "packaging": "stuks",
-            "unit_price": 8.9,
-            "net_price": 8.9,
-            "volume_val": 1.0,
-            "volume_unit": "unit",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 8.9
-              }
-            ]
           }
         ],
         "tiers": [
@@ -1200,6 +1176,9 @@
         "active_tier_min": 1,
         "is_manual_units": false,
         "is_manual_tier": false,
+        "is_manual_product": false,
+        "is_missing_article": false,
+        "missing_reason": "",
         "tasks_breakdown": {
           "Oliewissel": 1
         },
@@ -1215,14 +1194,14 @@
         "annual_volume_numeric": 31802.74,
         "contract_volume_numeric": 95408.21,
         "volume_unit": "g",
-        "packaging": "13 liter stuks",
-        "article_nr": "8665",
+        "packaging": "400 ml stuks",
+        "article_nr": "6707",
         "category": "Vetten",
-        "packages_needed": 8,
-        "base_unit_price": 2915.9,
+        "packages_needed": 239,
+        "base_unit_price": 106.2,
         "discount_pct": 10.0,
-        "net_unit_price": 2624.31,
-        "line_total": 20994.48,
+        "net_unit_price": 95.58,
+        "line_total": 22843.62,
         "candidate_packagings": [
           {
             "article_nr": "6707",
@@ -1248,6 +1227,33 @@
               {
                 "min_qty": 48,
                 "unit_price": 106.2
+              }
+            ]
+          },
+          {
+            "article_nr": "9253",
+            "description": "Grease HTG - spuitbus (300 ml)",
+            "packaging": "300 ml spuitbus",
+            "unit_price": 40.1,
+            "net_price": 40.1,
+            "volume_val": 0.3,
+            "volume_unit": "L",
+            "tiers": [
+              {
+                "min_qty": 1,
+                "unit_price": 40.1
+              },
+              {
+                "min_qty": 12,
+                "unit_price": 36.4
+              },
+              {
+                "min_qty": 24,
+                "unit_price": 34.8
+              },
+              {
+                "min_qty": 48,
+                "unit_price": 33.0
               }
             ]
           },
@@ -1360,89 +1366,32 @@
                 "unit_price": 39660.0
               }
             ]
-          },
-          {
-            "article_nr": "4206",
-            "description": "Servicepacks - 125 ml - Servicepack + Grease HTG",
-            "packaging": "125 ml stuks",
-            "unit_price": 73.1,
-            "net_price": 73.1,
-            "volume_val": 0.125,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 73.1
-              }
-            ]
-          },
-          {
-            "article_nr": "4406",
-            "description": "Servicepacks - 250 ml - Servicepack + Grease HTG",
-            "packaging": "250 ml stuks",
-            "unit_price": 132.0,
-            "net_price": 132.0,
-            "volume_val": 0.25,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 132.0
-              }
-            ]
-          },
-          {
-            "article_nr": "4412",
-            "description": "Servicepacks - 500 ml - Servicepack + Grease HTG",
-            "packaging": "500 ml stuks",
-            "unit_price": 251.4,
-            "net_price": 251.4,
-            "volume_val": 0.5,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 251.4
-              }
-            ]
-          },
-          {
-            "article_nr": "9253",
-            "description": "Grease HTG - spuitbus (300 ml)",
-            "packaging": "300 ml spuitbus",
-            "unit_price": 40.1,
-            "net_price": 40.1,
-            "volume_val": 0.3,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 40.1
-              },
-              {
-                "min_qty": 12,
-                "unit_price": 36.4
-              },
-              {
-                "min_qty": 24,
-                "unit_price": 34.8
-              },
-              {
-                "min_qty": 48,
-                "unit_price": 33.0
-              }
-            ]
           }
         ],
         "tiers": [
           {
             "min_qty": 1,
-            "unit_price": 2915.9
+            "unit_price": 123.5
+          },
+          {
+            "min_qty": 12,
+            "unit_price": 117.4
+          },
+          {
+            "min_qty": 24,
+            "unit_price": 111.6
+          },
+          {
+            "min_qty": 48,
+            "unit_price": 106.2
           }
         ],
-        "active_tier_min": 1,
+        "active_tier_min": 48,
         "is_manual_units": false,
         "is_manual_tier": false,
+        "is_manual_product": false,
+        "is_missing_article": false,
+        "missing_reason": "",
         "tasks_breakdown": {
           "Smeren": 99
         },
@@ -1553,36 +1502,6 @@
                 "unit_price": 1143.0
               }
             ]
-          },
-          {
-            "article_nr": "4202",
-            "description": "Servicepacks - 125 ml - Servicepack + Grease MP00",
-            "packaging": "125 ml stuks",
-            "unit_price": 48.1,
-            "net_price": 48.1,
-            "volume_val": 0.125,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 48.1
-              }
-            ]
-          },
-          {
-            "article_nr": "1603",
-            "description": "Naamplaatjes - Grease MP00",
-            "packaging": "stuks",
-            "unit_price": 8.9,
-            "net_price": 8.9,
-            "volume_val": 1.0,
-            "volume_unit": "unit",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 8.9
-              }
-            ]
           }
         ],
         "tiers": [
@@ -1594,6 +1513,9 @@
         "active_tier_min": 1,
         "is_manual_units": false,
         "is_manual_tier": false,
+        "is_manual_product": false,
+        "is_missing_article": false,
+        "missing_reason": "",
         "tasks_breakdown": {
           "Oliewissel": 173
         },
@@ -1609,14 +1531,14 @@
         "annual_volume_numeric": 25161.62,
         "contract_volume_numeric": 75484.86,
         "volume_unit": "g",
-        "packaging": "13 liter stuks",
-        "article_nr": "8553",
+        "packaging": "400 ml stuks",
+        "article_nr": "9088",
         "category": "Vetten",
-        "packages_needed": 6,
-        "base_unit_price": 612.3,
+        "packages_needed": 189,
+        "base_unit_price": 26.9,
         "discount_pct": 10.0,
-        "net_unit_price": 551.07,
-        "line_total": 3306.42,
+        "net_unit_price": 24.21,
+        "line_total": 4575.69,
         "candidate_packagings": [
           {
             "article_nr": "9088",
@@ -1758,272 +1680,32 @@
                 "unit_price": 7100.0
               }
             ]
-          },
-          {
-            "article_nr": "8963",
-            "description": "Bio grease MP2 - emmer (13 liter)",
-            "packaging": "13 liter stuks",
-            "unit_price": 728.0,
-            "net_price": 728.0,
-            "volume_val": 13.0,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 728.0
-              }
-            ]
-          },
-          {
-            "article_nr": "8965",
-            "description": "Bio grease MP2 - vat (30 liter)",
-            "packaging": "30 liter stuks",
-            "unit_price": 1560.0,
-            "net_price": 1560.0,
-            "volume_val": 30.0,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 1560.0
-              }
-            ]
-          },
-          {
-            "article_nr": "9199",
-            "description": "Food grease MP2 - emmer (13 liter)",
-            "packaging": "13 liter stuks",
-            "unit_price": 1024.4,
-            "net_price": 1024.4,
-            "volume_val": 13.0,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 1024.4
-              }
-            ]
-          },
-          {
-            "article_nr": "8853",
-            "description": "Food grease MP2 - vat (30 liter)",
-            "packaging": "30 liter stuks",
-            "unit_price": 2310.0,
-            "net_price": 2310.0,
-            "volume_val": 30.0,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 2310.0
-              }
-            ]
-          },
-          {
-            "article_nr": "1082",
-            "description": "Interflon Single Point Lubricator - 15 ml - Single Point Lubricator + Grease MP2/3",
-            "packaging": "15 ml stuks",
-            "unit_price": 51.4,
-            "net_price": 51.4,
-            "volume_val": 0.015,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 51.4
-              }
-            ]
-          },
-          {
-            "article_nr": "1051",
-            "description": "Interflon Single Point Lubricator - 30 ml - Single Point Lubricator + Grease MP2/3",
-            "packaging": "30 ml stuks",
-            "unit_price": 52.5,
-            "net_price": 52.5,
-            "volume_val": 0.03,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 52.5
-              }
-            ]
-          },
-          {
-            "article_nr": "1071",
-            "description": "Interflon Single Point Lubricator - 60 ml - Single Point Lubricator + Grease MP2/3",
-            "packaging": "60 ml stuks",
-            "unit_price": 47.5,
-            "net_price": 47.5,
-            "volume_val": 0.06,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 47.5
-              }
-            ]
-          },
-          {
-            "article_nr": "1061",
-            "description": "Interflon Single Point Lubricator - 125 ml - Single Point Lubricator + Grease MP2/3",
-            "packaging": "125 ml stuks",
-            "unit_price": 54.6,
-            "net_price": 54.6,
-            "volume_val": 0.125,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 54.6
-              }
-            ]
-          },
-          {
-            "article_nr": "1087",
-            "description": "Interflon Single Point Lubricator - 250 ml - Single Point Lubricator + Grease MP2/3",
-            "packaging": "250 ml stuks",
-            "unit_price": 121.2,
-            "net_price": 121.2,
-            "volume_val": 0.25,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 121.2
-              }
-            ]
-          },
-          {
-            "article_nr": "1711",
-            "description": "Interflon Lubricator - 60 ml - IF Lubricator + Grease MP2/3",
-            "packaging": "60 ml stuks",
-            "unit_price": 51.6,
-            "net_price": 51.6,
-            "volume_val": 0.06,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 51.6
-              }
-            ]
-          },
-          {
-            "article_nr": "1720",
-            "description": "Interflon Lubricator - 120 ml - IF Lubricator + Grease MP2/3",
-            "packaging": "120 ml stuks",
-            "unit_price": 61.6,
-            "net_price": 61.6,
-            "volume_val": 0.12,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 61.6
-              }
-            ]
-          },
-          {
-            "article_nr": "1743",
-            "description": "Interflon Lubricator - 240 ml - IF Lubricator + Grease MP2/3",
-            "packaging": "240 ml stuks",
-            "unit_price": 79.2,
-            "net_price": 79.2,
-            "volume_val": 0.24,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 79.2
-              }
-            ]
-          },
-          {
-            "article_nr": "4419",
-            "description": "Servicepacks - 60 ml - Servicepack + Grease MP2/3",
-            "packaging": "60 ml stuks",
-            "unit_price": 33.9,
-            "net_price": 33.9,
-            "volume_val": 0.06,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 33.9
-              }
-            ]
-          },
-          {
-            "article_nr": "4201",
-            "description": "Servicepacks - 125 ml - Servicepack + Grease MP2/3",
-            "packaging": "125 ml stuks",
-            "unit_price": 44.8,
-            "net_price": 44.8,
-            "volume_val": 0.125,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 44.8
-              }
-            ]
-          },
-          {
-            "article_nr": "4401",
-            "description": "Servicepacks - 250 ml - Servicepack + Grease MP2/3",
-            "packaging": "250 ml stuks",
-            "unit_price": 61.1,
-            "net_price": 61.1,
-            "volume_val": 0.25,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 61.1
-              }
-            ]
-          },
-          {
-            "article_nr": "4408",
-            "description": "Servicepacks - 500 ml - Servicepack + Grease MP2/3",
-            "packaging": "500 ml stuks",
-            "unit_price": 96.8,
-            "net_price": 96.8,
-            "volume_val": 0.5,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 96.8
-              }
-            ]
-          },
-          {
-            "article_nr": "1602",
-            "description": "Naamplaatjes - Grease MP2/3",
-            "packaging": "stuks",
-            "unit_price": 8.9,
-            "net_price": 8.9,
-            "volume_val": 1.0,
-            "volume_unit": "unit",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 8.9
-              }
-            ]
           }
         ],
         "tiers": [
           {
             "min_qty": 1,
-            "unit_price": 612.3
+            "unit_price": 31.1
+          },
+          {
+            "min_qty": 12,
+            "unit_price": 29.8
+          },
+          {
+            "min_qty": 24,
+            "unit_price": 28.2
+          },
+          {
+            "min_qty": 48,
+            "unit_price": 26.9
           }
         ],
-        "active_tier_min": 1,
+        "active_tier_min": 48,
         "is_manual_units": false,
         "is_manual_tier": false,
+        "is_manual_product": false,
+        "is_missing_article": false,
+        "missing_reason": "",
         "tasks_breakdown": {
           "Smeren": 648
         },
@@ -2039,14 +1721,14 @@
         "annual_volume_numeric": 50294.4,
         "contract_volume_numeric": 150883.2,
         "volume_unit": "g",
-        "packaging": "13 liter stuks",
-        "article_nr": "8553",
+        "packaging": "400 ml stuks",
+        "article_nr": "9088",
         "category": "Vetten",
-        "packages_needed": 12,
-        "base_unit_price": 612.3,
+        "packages_needed": 378,
+        "base_unit_price": 26.9,
         "discount_pct": 10.0,
-        "net_unit_price": 551.07,
-        "line_total": 6612.84,
+        "net_unit_price": 24.21,
+        "line_total": 9151.38,
         "candidate_packagings": [
           {
             "article_nr": "9088",
@@ -2188,272 +1870,32 @@
                 "unit_price": 7100.0
               }
             ]
-          },
-          {
-            "article_nr": "8963",
-            "description": "Bio grease MP2 - emmer (13 liter)",
-            "packaging": "13 liter stuks",
-            "unit_price": 728.0,
-            "net_price": 728.0,
-            "volume_val": 13.0,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 728.0
-              }
-            ]
-          },
-          {
-            "article_nr": "8965",
-            "description": "Bio grease MP2 - vat (30 liter)",
-            "packaging": "30 liter stuks",
-            "unit_price": 1560.0,
-            "net_price": 1560.0,
-            "volume_val": 30.0,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 1560.0
-              }
-            ]
-          },
-          {
-            "article_nr": "9199",
-            "description": "Food grease MP2 - emmer (13 liter)",
-            "packaging": "13 liter stuks",
-            "unit_price": 1024.4,
-            "net_price": 1024.4,
-            "volume_val": 13.0,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 1024.4
-              }
-            ]
-          },
-          {
-            "article_nr": "8853",
-            "description": "Food grease MP2 - vat (30 liter)",
-            "packaging": "30 liter stuks",
-            "unit_price": 2310.0,
-            "net_price": 2310.0,
-            "volume_val": 30.0,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 2310.0
-              }
-            ]
-          },
-          {
-            "article_nr": "1082",
-            "description": "Interflon Single Point Lubricator - 15 ml - Single Point Lubricator + Grease MP2/3",
-            "packaging": "15 ml stuks",
-            "unit_price": 51.4,
-            "net_price": 51.4,
-            "volume_val": 0.015,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 51.4
-              }
-            ]
-          },
-          {
-            "article_nr": "1051",
-            "description": "Interflon Single Point Lubricator - 30 ml - Single Point Lubricator + Grease MP2/3",
-            "packaging": "30 ml stuks",
-            "unit_price": 52.5,
-            "net_price": 52.5,
-            "volume_val": 0.03,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 52.5
-              }
-            ]
-          },
-          {
-            "article_nr": "1071",
-            "description": "Interflon Single Point Lubricator - 60 ml - Single Point Lubricator + Grease MP2/3",
-            "packaging": "60 ml stuks",
-            "unit_price": 47.5,
-            "net_price": 47.5,
-            "volume_val": 0.06,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 47.5
-              }
-            ]
-          },
-          {
-            "article_nr": "1061",
-            "description": "Interflon Single Point Lubricator - 125 ml - Single Point Lubricator + Grease MP2/3",
-            "packaging": "125 ml stuks",
-            "unit_price": 54.6,
-            "net_price": 54.6,
-            "volume_val": 0.125,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 54.6
-              }
-            ]
-          },
-          {
-            "article_nr": "1087",
-            "description": "Interflon Single Point Lubricator - 250 ml - Single Point Lubricator + Grease MP2/3",
-            "packaging": "250 ml stuks",
-            "unit_price": 121.2,
-            "net_price": 121.2,
-            "volume_val": 0.25,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 121.2
-              }
-            ]
-          },
-          {
-            "article_nr": "1711",
-            "description": "Interflon Lubricator - 60 ml - IF Lubricator + Grease MP2/3",
-            "packaging": "60 ml stuks",
-            "unit_price": 51.6,
-            "net_price": 51.6,
-            "volume_val": 0.06,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 51.6
-              }
-            ]
-          },
-          {
-            "article_nr": "1720",
-            "description": "Interflon Lubricator - 120 ml - IF Lubricator + Grease MP2/3",
-            "packaging": "120 ml stuks",
-            "unit_price": 61.6,
-            "net_price": 61.6,
-            "volume_val": 0.12,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 61.6
-              }
-            ]
-          },
-          {
-            "article_nr": "1743",
-            "description": "Interflon Lubricator - 240 ml - IF Lubricator + Grease MP2/3",
-            "packaging": "240 ml stuks",
-            "unit_price": 79.2,
-            "net_price": 79.2,
-            "volume_val": 0.24,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 79.2
-              }
-            ]
-          },
-          {
-            "article_nr": "4419",
-            "description": "Servicepacks - 60 ml - Servicepack + Grease MP2/3",
-            "packaging": "60 ml stuks",
-            "unit_price": 33.9,
-            "net_price": 33.9,
-            "volume_val": 0.06,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 33.9
-              }
-            ]
-          },
-          {
-            "article_nr": "4201",
-            "description": "Servicepacks - 125 ml - Servicepack + Grease MP2/3",
-            "packaging": "125 ml stuks",
-            "unit_price": 44.8,
-            "net_price": 44.8,
-            "volume_val": 0.125,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 44.8
-              }
-            ]
-          },
-          {
-            "article_nr": "4401",
-            "description": "Servicepacks - 250 ml - Servicepack + Grease MP2/3",
-            "packaging": "250 ml stuks",
-            "unit_price": 61.1,
-            "net_price": 61.1,
-            "volume_val": 0.25,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 61.1
-              }
-            ]
-          },
-          {
-            "article_nr": "4408",
-            "description": "Servicepacks - 500 ml - Servicepack + Grease MP2/3",
-            "packaging": "500 ml stuks",
-            "unit_price": 96.8,
-            "net_price": 96.8,
-            "volume_val": 0.5,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 96.8
-              }
-            ]
-          },
-          {
-            "article_nr": "1602",
-            "description": "Naamplaatjes - Grease MP2/3",
-            "packaging": "stuks",
-            "unit_price": 8.9,
-            "net_price": 8.9,
-            "volume_val": 1.0,
-            "volume_unit": "unit",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 8.9
-              }
-            ]
           }
         ],
         "tiers": [
           {
             "min_qty": 1,
-            "unit_price": 612.3
+            "unit_price": 31.1
+          },
+          {
+            "min_qty": 12,
+            "unit_price": 29.8
+          },
+          {
+            "min_qty": 24,
+            "unit_price": 28.2
+          },
+          {
+            "min_qty": 48,
+            "unit_price": 26.9
           }
         ],
-        "active_tier_min": 1,
+        "active_tier_min": 48,
         "is_manual_units": false,
         "is_manual_tier": false,
+        "is_manual_product": false,
+        "is_missing_article": false,
+        "missing_reason": "",
         "tasks_breakdown": {
           "Bijvullen reservoir": 31
         },
@@ -2464,77 +1906,32 @@
         "product_name": "Interflon Grease MP2/3 - Service Pack",
         "tool": "Service pack 250 ml",
         "points_count": 4,
-        "annual_volume_display": "4.47 L",
-        "contract_volume_display": "13.40 L",
-        "annual_volume_numeric": 4467.5,
-        "contract_volume_numeric": 13402.5,
+        "annual_volume_display": "4.50 L",
+        "contract_volume_display": "13.50 L",
+        "annual_volume_numeric": 4500.0,
+        "contract_volume_numeric": 13500.0,
         "volume_unit": "ml",
-        "packaging": "13 liter stuks",
-        "article_nr": "8553",
-        "category": "Vetten",
-        "packages_needed": 2,
-        "base_unit_price": 612.3,
-        "discount_pct": 10.0,
-        "net_unit_price": 551.07,
-        "line_total": 1102.14,
+        "packaging": "250 ml stuks",
+        "article_nr": "4401",
+        "category": "Automatic lubrication",
+        "packages_needed": 54,
+        "base_unit_price": 61.1,
+        "discount_pct": 5.0,
+        "net_unit_price": 58.05,
+        "line_total": 3134.7,
         "candidate_packagings": [
           {
-            "article_nr": "1082",
-            "description": "Interflon Single Point Lubricator - 15 ml - Single Point Lubricator + Grease MP2/3",
-            "packaging": "15 ml stuks",
-            "unit_price": 51.4,
-            "net_price": 51.4,
-            "volume_val": 0.015,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 51.4
-              }
-            ]
-          },
-          {
-            "article_nr": "1071",
-            "description": "Interflon Single Point Lubricator - 60 ml - Single Point Lubricator + Grease MP2/3",
-            "packaging": "60 ml stuks",
-            "unit_price": 47.5,
-            "net_price": 47.5,
-            "volume_val": 0.06,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 47.5
-              }
-            ]
-          },
-          {
-            "article_nr": "1061",
-            "description": "Interflon Single Point Lubricator - 125 ml - Single Point Lubricator + Grease MP2/3",
-            "packaging": "125 ml stuks",
-            "unit_price": 54.6,
-            "net_price": 54.6,
-            "volume_val": 0.125,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 54.6
-              }
-            ]
-          },
-          {
-            "article_nr": "1087",
-            "description": "Interflon Single Point Lubricator - 250 ml - Single Point Lubricator + Grease MP2/3",
+            "article_nr": "4401",
+            "description": "Servicepacks - 250 ml - Servicepack + Grease MP2/3",
             "packaging": "250 ml stuks",
-            "unit_price": 121.2,
-            "net_price": 121.2,
+            "unit_price": 61.1,
+            "net_price": 61.1,
             "volume_val": 0.25,
             "volume_unit": "L",
             "tiers": [
               {
                 "min_qty": 1,
-                "unit_price": 121.2
+                "unit_price": 61.1
               }
             ]
           },
@@ -2569,36 +1966,6 @@
             ]
           },
           {
-            "article_nr": "4401",
-            "description": "Servicepacks - 250 ml - Servicepack + Grease MP2/3",
-            "packaging": "250 ml stuks",
-            "unit_price": 61.1,
-            "net_price": 61.1,
-            "volume_val": 0.25,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 61.1
-              }
-            ]
-          },
-          {
-            "article_nr": "1051",
-            "description": "Interflon Single Point Lubricator - 30 ml - Single Point Lubricator + Grease MP2/3",
-            "packaging": "30 ml stuks",
-            "unit_price": 52.5,
-            "net_price": 52.5,
-            "volume_val": 0.03,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 52.5
-              }
-            ]
-          },
-          {
             "article_nr": "4408",
             "description": "Servicepacks - 500 ml - Servicepack + Grease MP2/3",
             "packaging": "500 ml stuks",
@@ -2612,278 +1979,20 @@
                 "unit_price": 96.8
               }
             ]
-          },
-          {
-            "article_nr": "1711",
-            "description": "Interflon Lubricator - 60 ml - IF Lubricator + Grease MP2/3",
-            "packaging": "60 ml stuks",
-            "unit_price": 51.6,
-            "net_price": 51.6,
-            "volume_val": 0.06,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 51.6
-              }
-            ]
-          },
-          {
-            "article_nr": "8531",
-            "description": "Grease MP2/3 - cartouche (400 ml)",
-            "packaging": "400 ml stuks",
-            "unit_price": 31.1,
-            "net_price": 31.1,
-            "volume_val": 0.4,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 31.1
-              },
-              {
-                "min_qty": 12,
-                "unit_price": 29.8
-              },
-              {
-                "min_qty": 24,
-                "unit_price": 28.2
-              },
-              {
-                "min_qty": 48,
-                "unit_price": 26.9
-              }
-            ]
-          },
-          {
-            "article_nr": "9088",
-            "description": "Grease MP2/3 - Lube-Shuttle cart. (400 ml)",
-            "packaging": "400 ml stuks",
-            "unit_price": 31.1,
-            "net_price": 31.1,
-            "volume_val": 0.4,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 31.1
-              },
-              {
-                "min_qty": 12,
-                "unit_price": 29.8
-              },
-              {
-                "min_qty": 24,
-                "unit_price": 28.2
-              },
-              {
-                "min_qty": 48,
-                "unit_price": 26.9
-              }
-            ]
-          },
-          {
-            "article_nr": "8023",
-            "description": "Grease MP2/3 - pot (1 liter)",
-            "packaging": "1 liter stuks",
-            "unit_price": 62.9,
-            "net_price": 62.9,
-            "volume_val": 1.0,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 62.9
-              },
-              {
-                "min_qty": 6,
-                "unit_price": 57.1
-              },
-              {
-                "min_qty": 12,
-                "unit_price": 51.8
-              },
-              {
-                "min_qty": 24,
-                "unit_price": 49.4
-              }
-            ]
-          },
-          {
-            "article_nr": "8553",
-            "description": "Grease MP2/3 - emmer (13 liter)",
-            "packaging": "13 liter stuks",
-            "unit_price": 612.3,
-            "net_price": 612.3,
-            "volume_val": 13.0,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 612.3
-              }
-            ]
-          },
-          {
-            "article_nr": "8025",
-            "description": "Grease MP2/3 - vat (30 liter)",
-            "packaging": "30 liter stuks",
-            "unit_price": 1143.0,
-            "net_price": 1143.0,
-            "volume_val": 30.0,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 1143.0
-              }
-            ]
-          },
-          {
-            "article_nr": "8026",
-            "description": "Grease MP2/3 - vat (60 liter)",
-            "packaging": "60 liter stuks",
-            "unit_price": 2202.0,
-            "net_price": 2202.0,
-            "volume_val": 60.0,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 2202.0
-              }
-            ]
-          },
-          {
-            "article_nr": "8640",
-            "description": "Grease MP2/3 - vat (200 liter)",
-            "packaging": "200 liter stuks",
-            "unit_price": 7100.0,
-            "net_price": 7100.0,
-            "volume_val": 200.0,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 7100.0
-              }
-            ]
-          },
-          {
-            "article_nr": "8963",
-            "description": "Bio grease MP2 - emmer (13 liter)",
-            "packaging": "13 liter stuks",
-            "unit_price": 728.0,
-            "net_price": 728.0,
-            "volume_val": 13.0,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 728.0
-              }
-            ]
-          },
-          {
-            "article_nr": "8965",
-            "description": "Bio grease MP2 - vat (30 liter)",
-            "packaging": "30 liter stuks",
-            "unit_price": 1560.0,
-            "net_price": 1560.0,
-            "volume_val": 30.0,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 1560.0
-              }
-            ]
-          },
-          {
-            "article_nr": "9199",
-            "description": "Food grease MP2 - emmer (13 liter)",
-            "packaging": "13 liter stuks",
-            "unit_price": 1024.4,
-            "net_price": 1024.4,
-            "volume_val": 13.0,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 1024.4
-              }
-            ]
-          },
-          {
-            "article_nr": "8853",
-            "description": "Food grease MP2 - vat (30 liter)",
-            "packaging": "30 liter stuks",
-            "unit_price": 2310.0,
-            "net_price": 2310.0,
-            "volume_val": 30.0,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 2310.0
-              }
-            ]
-          },
-          {
-            "article_nr": "1720",
-            "description": "Interflon Lubricator - 120 ml - IF Lubricator + Grease MP2/3",
-            "packaging": "120 ml stuks",
-            "unit_price": 61.6,
-            "net_price": 61.6,
-            "volume_val": 0.12,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 61.6
-              }
-            ]
-          },
-          {
-            "article_nr": "1743",
-            "description": "Interflon Lubricator - 240 ml - IF Lubricator + Grease MP2/3",
-            "packaging": "240 ml stuks",
-            "unit_price": 79.2,
-            "net_price": 79.2,
-            "volume_val": 0.24,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 79.2
-              }
-            ]
-          },
-          {
-            "article_nr": "1602",
-            "description": "Naamplaatjes - Grease MP2/3",
-            "packaging": "stuks",
-            "unit_price": 8.9,
-            "net_price": 8.9,
-            "volume_val": 1.0,
-            "volume_unit": "unit",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 8.9
-              }
-            ]
           }
         ],
         "tiers": [
           {
             "min_qty": 1,
-            "unit_price": 612.3
+            "unit_price": 61.1
           }
         ],
         "active_tier_min": 1,
         "is_manual_units": false,
         "is_manual_tier": false,
+        "is_manual_product": false,
+        "is_missing_article": false,
+        "missing_reason": "",
         "tasks_breakdown": {
           "Vervangen": 4
         },
@@ -2954,36 +2063,6 @@
             ]
           },
           {
-            "article_nr": "8963",
-            "description": "Bio grease MP2 - emmer (13 liter)",
-            "packaging": "13 liter stuks",
-            "unit_price": 728.0,
-            "net_price": 728.0,
-            "volume_val": 13.0,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 728.0
-              }
-            ]
-          },
-          {
-            "article_nr": "9199",
-            "description": "Food grease MP2 - emmer (13 liter)",
-            "packaging": "13 liter stuks",
-            "unit_price": 1024.4,
-            "net_price": 1024.4,
-            "volume_val": 13.0,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 1024.4
-              }
-            ]
-          },
-          {
             "article_nr": "8531",
             "description": "Grease MP2/3 - cartouche (400 ml)",
             "packaging": "400 ml stuks",
@@ -3078,231 +2157,6 @@
                 "unit_price": 1143.0
               }
             ]
-          },
-          {
-            "article_nr": "8965",
-            "description": "Bio grease MP2 - vat (30 liter)",
-            "packaging": "30 liter stuks",
-            "unit_price": 1560.0,
-            "net_price": 1560.0,
-            "volume_val": 30.0,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 1560.0
-              }
-            ]
-          },
-          {
-            "article_nr": "8853",
-            "description": "Food grease MP2 - vat (30 liter)",
-            "packaging": "30 liter stuks",
-            "unit_price": 2310.0,
-            "net_price": 2310.0,
-            "volume_val": 30.0,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 2310.0
-              }
-            ]
-          },
-          {
-            "article_nr": "1082",
-            "description": "Interflon Single Point Lubricator - 15 ml - Single Point Lubricator + Grease MP2/3",
-            "packaging": "15 ml stuks",
-            "unit_price": 51.4,
-            "net_price": 51.4,
-            "volume_val": 0.015,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 51.4
-              }
-            ]
-          },
-          {
-            "article_nr": "1051",
-            "description": "Interflon Single Point Lubricator - 30 ml - Single Point Lubricator + Grease MP2/3",
-            "packaging": "30 ml stuks",
-            "unit_price": 52.5,
-            "net_price": 52.5,
-            "volume_val": 0.03,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 52.5
-              }
-            ]
-          },
-          {
-            "article_nr": "1071",
-            "description": "Interflon Single Point Lubricator - 60 ml - Single Point Lubricator + Grease MP2/3",
-            "packaging": "60 ml stuks",
-            "unit_price": 47.5,
-            "net_price": 47.5,
-            "volume_val": 0.06,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 47.5
-              }
-            ]
-          },
-          {
-            "article_nr": "1061",
-            "description": "Interflon Single Point Lubricator - 125 ml - Single Point Lubricator + Grease MP2/3",
-            "packaging": "125 ml stuks",
-            "unit_price": 54.6,
-            "net_price": 54.6,
-            "volume_val": 0.125,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 54.6
-              }
-            ]
-          },
-          {
-            "article_nr": "1087",
-            "description": "Interflon Single Point Lubricator - 250 ml - Single Point Lubricator + Grease MP2/3",
-            "packaging": "250 ml stuks",
-            "unit_price": 121.2,
-            "net_price": 121.2,
-            "volume_val": 0.25,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 121.2
-              }
-            ]
-          },
-          {
-            "article_nr": "1711",
-            "description": "Interflon Lubricator - 60 ml - IF Lubricator + Grease MP2/3",
-            "packaging": "60 ml stuks",
-            "unit_price": 51.6,
-            "net_price": 51.6,
-            "volume_val": 0.06,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 51.6
-              }
-            ]
-          },
-          {
-            "article_nr": "1720",
-            "description": "Interflon Lubricator - 120 ml - IF Lubricator + Grease MP2/3",
-            "packaging": "120 ml stuks",
-            "unit_price": 61.6,
-            "net_price": 61.6,
-            "volume_val": 0.12,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 61.6
-              }
-            ]
-          },
-          {
-            "article_nr": "1743",
-            "description": "Interflon Lubricator - 240 ml - IF Lubricator + Grease MP2/3",
-            "packaging": "240 ml stuks",
-            "unit_price": 79.2,
-            "net_price": 79.2,
-            "volume_val": 0.24,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 79.2
-              }
-            ]
-          },
-          {
-            "article_nr": "4419",
-            "description": "Servicepacks - 60 ml - Servicepack + Grease MP2/3",
-            "packaging": "60 ml stuks",
-            "unit_price": 33.9,
-            "net_price": 33.9,
-            "volume_val": 0.06,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 33.9
-              }
-            ]
-          },
-          {
-            "article_nr": "4201",
-            "description": "Servicepacks - 125 ml - Servicepack + Grease MP2/3",
-            "packaging": "125 ml stuks",
-            "unit_price": 44.8,
-            "net_price": 44.8,
-            "volume_val": 0.125,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 44.8
-              }
-            ]
-          },
-          {
-            "article_nr": "4401",
-            "description": "Servicepacks - 250 ml - Servicepack + Grease MP2/3",
-            "packaging": "250 ml stuks",
-            "unit_price": 61.1,
-            "net_price": 61.1,
-            "volume_val": 0.25,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 61.1
-              }
-            ]
-          },
-          {
-            "article_nr": "4408",
-            "description": "Servicepacks - 500 ml - Servicepack + Grease MP2/3",
-            "packaging": "500 ml stuks",
-            "unit_price": 96.8,
-            "net_price": 96.8,
-            "volume_val": 0.5,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 96.8
-              }
-            ]
-          },
-          {
-            "article_nr": "1602",
-            "description": "Naamplaatjes - Grease MP2/3",
-            "packaging": "stuks",
-            "unit_price": 8.9,
-            "net_price": 8.9,
-            "volume_val": 1.0,
-            "volume_unit": "unit",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 8.9
-              }
-            ]
           }
         ],
         "tiers": [
@@ -3314,6 +2168,9 @@
         "active_tier_min": 1,
         "is_manual_units": false,
         "is_manual_tier": false,
+        "is_manual_product": false,
+        "is_missing_article": false,
+        "missing_reason": "",
         "tasks_breakdown": {
           "Bijvullen reservoir": 16
         },
@@ -3478,111 +2335,6 @@
                 "unit_price": 20560.0
               }
             ]
-          },
-          {
-            "article_nr": "1268",
-            "description": "Hulpmaterialen - divers - Mesto ferrox plus hogedruksproeier 6 - 9 liter",
-            "packaging": "stuks",
-            "unit_price": 361.9,
-            "net_price": 361.9,
-            "volume_val": 9.0,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 361.9
-              }
-            ]
-          },
-          {
-            "article_nr": "1269",
-            "description": "Hulpmaterialen - divers - Mesto ferrox plus hogedruksproeier 10 - 13 liter",
-            "packaging": "stuks",
-            "unit_price": 397.8,
-            "net_price": 397.8,
-            "volume_val": 13.0,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 397.8
-              }
-            ]
-          },
-          {
-            "article_nr": "1329",
-            "description": "Smeerpistolen - Hogedruk smeerpistool",
-            "packaging": "stuks",
-            "unit_price": 87.2,
-            "net_price": 87.2,
-            "volume_val": 1.0,
-            "volume_unit": "unit",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 87.2
-              }
-            ]
-          },
-          {
-            "article_nr": "1330",
-            "description": "Smeerpistolen - Hogedruk smeerpistool met Z-koppeling",
-            "packaging": "stuks",
-            "unit_price": 130.2,
-            "net_price": 130.2,
-            "volume_val": 1.0,
-            "volume_unit": "unit",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 130.2
-              }
-            ]
-          },
-          {
-            "article_nr": "1316",
-            "description": "Hogedrukslangen - Hogedrukslang 3,5 m",
-            "packaging": "stuks",
-            "unit_price": 130.9,
-            "net_price": 130.9,
-            "volume_val": 1.0,
-            "volume_unit": "unit",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 130.9
-              }
-            ]
-          },
-          {
-            "article_nr": "1317",
-            "description": "Hogedrukslangen - Hogedrukslang 6,5 m",
-            "packaging": "stuks",
-            "unit_price": 265.2,
-            "net_price": 265.2,
-            "volume_val": 1.0,
-            "volume_unit": "unit",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 265.2
-              }
-            ]
-          },
-          {
-            "article_nr": "1318",
-            "description": "Hogedrukslangen - Hogedrukslang 10 m",
-            "packaging": "stuks",
-            "unit_price": 387.3,
-            "net_price": 387.3,
-            "volume_val": 1.0,
-            "volume_unit": "unit",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 387.3
-              }
-            ]
           }
         ],
         "tiers": [
@@ -3606,6 +2358,9 @@
         "active_tier_min": 1,
         "is_manual_units": false,
         "is_manual_tier": false,
+        "is_manual_product": false,
+        "is_missing_article": false,
+        "missing_reason": "",
         "tasks_breakdown": {
           "Smeren": 24
         },
@@ -3732,21 +2487,6 @@
                 "unit_price": 51.0
               }
             ]
-          },
-          {
-            "article_nr": "1601",
-            "description": "Naamplaatjes - Lube EP+",
-            "packaging": "stuks",
-            "unit_price": 8.9,
-            "net_price": 8.9,
-            "volume_val": 1.0,
-            "volume_unit": "unit",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 8.9
-              }
-            ]
           }
         ],
         "tiers": [
@@ -3770,6 +2510,9 @@
         "active_tier_min": 48,
         "is_manual_units": false,
         "is_manual_tier": false,
+        "is_manual_product": false,
+        "is_missing_article": false,
+        "missing_reason": "",
         "tasks_breakdown": {
           "Smeren": 20
         },
@@ -3810,6 +2553,33 @@
               {
                 "min_qty": 3,
                 "unit_price": 38.9
+              }
+            ]
+          },
+          {
+            "article_nr": "9231",
+            "description": "Lube TF - spuitbus (500 ml)",
+            "packaging": "500 ml spuitbus",
+            "unit_price": 27.4,
+            "net_price": 27.4,
+            "volume_val": 0.5,
+            "volume_unit": "L",
+            "tiers": [
+              {
+                "min_qty": 1,
+                "unit_price": 27.4
+              },
+              {
+                "min_qty": 12,
+                "unit_price": 26.2
+              },
+              {
+                "min_qty": 24,
+                "unit_price": 25.0
+              },
+              {
+                "min_qty": 48,
+                "unit_price": 24.0
               }
             ]
           },
@@ -3869,33 +2639,6 @@
                 "unit_price": 416.0
               }
             ]
-          },
-          {
-            "article_nr": "9231",
-            "description": "Lube TF - spuitbus (500 ml)",
-            "packaging": "500 ml spuitbus",
-            "unit_price": 27.4,
-            "net_price": 27.4,
-            "volume_val": 0.5,
-            "volume_unit": "L",
-            "tiers": [
-              {
-                "min_qty": 1,
-                "unit_price": 27.4
-              },
-              {
-                "min_qty": 12,
-                "unit_price": 26.2
-              },
-              {
-                "min_qty": 24,
-                "unit_price": 25.0
-              },
-              {
-                "min_qty": 48,
-                "unit_price": 24.0
-              }
-            ]
           }
         ],
         "tiers": [
@@ -3911,6 +2654,9 @@
         "active_tier_min": 1,
         "is_manual_units": false,
         "is_manual_tier": false,
+        "is_manual_product": false,
+        "is_missing_article": false,
+        "missing_reason": "",
         "tasks_breakdown": {
           "Smeren": 2
         },
@@ -4060,6 +2806,9 @@
         "active_tier_min": 12,
         "is_manual_units": false,
         "is_manual_tier": false,
+        "is_manual_product": false,
+        "is_missing_article": false,
+        "missing_reason": "",
         "tasks_breakdown": {
           "Smeren": 46
         },
@@ -4070,15 +2819,15 @@
         "product_name": "Interflon Single Point Lubricator Grease HTG ISPL 125Ml",
         "tool": "Interflon Single Point Lubricator",
         "points_count": 4,
-        "annual_volume_display": "24.3 stuks",
-        "contract_volume_display": "73.0 stuks",
-        "annual_volume_numeric": 24.33,
-        "contract_volume_numeric": 73.0,
+        "annual_volume_display": "24.0 stuks",
+        "contract_volume_display": "72.0 stuks",
+        "annual_volume_numeric": 24.0,
+        "contract_volume_numeric": 72.0,
         "volume_unit": "stuks",
         "packaging": "Standaard verpakking",
         "article_nr": "-",
         "category": "Smeermiddelen",
-        "packages_needed": 73,
+        "packages_needed": 72,
         "base_unit_price": 0.0,
         "discount_pct": 5.0,
         "net_unit_price": 0.0,
@@ -4088,6 +2837,9 @@
         "active_tier_min": 1,
         "is_manual_units": false,
         "is_manual_tier": false,
+        "is_manual_product": false,
+        "is_missing_article": true,
+        "missing_reason": "ISPL met Grease HTG ISPL 125Ml bestaat nog niet in catalogus - manueel invullen",
         "tasks_breakdown": {
           "Vervangen": 4
         },
@@ -4098,15 +2850,15 @@
         "product_name": "Interflon Single Point Lubricator Lube TF 125Ml",
         "tool": "Interflon Single Point Lubricator",
         "points_count": 2,
-        "annual_volume_display": "24.3 stuks",
-        "contract_volume_display": "73.0 stuks",
-        "annual_volume_numeric": 24.33,
-        "contract_volume_numeric": 73.0,
+        "annual_volume_display": "24.0 stuks",
+        "contract_volume_display": "72.0 stuks",
+        "annual_volume_numeric": 24.0,
+        "contract_volume_numeric": 72.0,
         "volume_unit": "stuks",
         "packaging": "Standaard verpakking",
         "article_nr": "-",
         "category": "Smeermiddelen",
-        "packages_needed": 73,
+        "packages_needed": 72,
         "base_unit_price": 0.0,
         "discount_pct": 5.0,
         "net_unit_price": 0.0,
@@ -4116,6 +2868,9 @@
         "active_tier_min": 1,
         "is_manual_units": false,
         "is_manual_tier": false,
+        "is_manual_product": false,
+        "is_missing_article": true,
+        "missing_reason": "ISPL met Lube TF 125Ml bestaat nog niet in catalogus - manueel invullen",
         "tasks_breakdown": {
           "Vervangen": 2
         },
@@ -4144,6 +2899,9 @@
         "active_tier_min": 1,
         "is_manual_units": false,
         "is_manual_tier": false,
+        "is_manual_product": false,
+        "is_missing_article": true,
+        "missing_reason": "Product / verpakking bestaat nog niet in catalogus - manueel invullen",
         "tasks_breakdown": {
           "Oliewissel": 2
         },
@@ -4172,6 +2930,9 @@
         "active_tier_min": 1,
         "is_manual_units": false,
         "is_manual_tier": false,
+        "is_manual_product": false,
+        "is_missing_article": true,
+        "missing_reason": "Product / verpakking bestaat nog niet in catalogus - manueel invullen",
         "tasks_breakdown": {
           "Oliewissel": 5
         },
@@ -4200,6 +2961,9 @@
         "active_tier_min": 1,
         "is_manual_units": false,
         "is_manual_tier": false,
+        "is_manual_product": false,
+        "is_missing_article": true,
+        "missing_reason": "Product / verpakking bestaat nog niet in catalogus - manueel invullen",
         "tasks_breakdown": {
           "Oliewissel": 2
         },
@@ -4228,6 +2992,9 @@
         "active_tier_min": 1,
         "is_manual_units": false,
         "is_manual_tier": false,
+        "is_manual_product": false,
+        "is_missing_article": true,
+        "missing_reason": "Product / verpakking bestaat nog niet in catalogus - manueel invullen",
         "tasks_breakdown": {
           "Oliewissel": 1
         },
@@ -4256,6 +3023,9 @@
         "active_tier_min": 1,
         "is_manual_units": false,
         "is_manual_tier": false,
+        "is_manual_product": false,
+        "is_missing_article": true,
+        "missing_reason": "Product / verpakking bestaat nog niet in catalogus - manueel invullen",
         "tasks_breakdown": {
           "Bijvullen reservoir": 1
         },
@@ -4284,6 +3054,9 @@
         "active_tier_min": 1,
         "is_manual_units": false,
         "is_manual_tier": false,
+        "is_manual_product": false,
+        "is_missing_article": true,
+        "missing_reason": "Product / verpakking bestaat nog niet in catalogus - manueel invullen",
         "tasks_breakdown": {
           "Bijvullen reservoir": 4
         },
@@ -32493,7 +31266,7 @@
     "percentage": 0,
     "type": "general"
   },
-  "last_updated": "2026-11-12T11:13:35.662646",
+  "last_updated": "2026-11-17T15:44:05.504835",
   "price_list": {
     "filename": "2026_Prijslijst.xlsx",
     "total_items": 693,
@@ -47491,7 +46264,7 @@
   },
   "settings": {
     "duration_years": 3,
-    "fee_per_month": 10949.36,
+    "fee_per_month": 12348.84,
     "gram_per_pompslag": 1.5,
     "ml_per_second": 1.0,
     "partner_surcharge_pct": 15.0,
