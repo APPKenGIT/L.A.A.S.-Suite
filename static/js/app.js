@@ -673,7 +673,7 @@ const app = createApp({
 
         const val = (inputPassword.value || '').trim();
 
-        const valid = ['1nt3rfl0n', 'laas2026', 'interflon', 'Interflon', 'Interflon2026'];
+        const valid = ['1nt3rfl0n', 'laas2026', 'Interflon2026'];
 
         if (valid.includes(val)) {
 
@@ -754,7 +754,7 @@ const app = createApp({
       }
 
       if (isCloudMode) {
-        const valid = ['1nt3rfl0n', 'laas2026', 'interflon', 'Interflon', 'Interflon2026'];
+        const valid = ['1nt3rfl0n', 'laas2026', 'Interflon2026'];
         if (valid.includes(val)) {
           isAuthenticated.value = true;
           isUnlocked.value = true;
@@ -5342,7 +5342,7 @@ const app = createApp({
       acceptingContract.value = true;
       if (isCloudMode) {
         const val = (acceptForm.value.password || '').trim();
-        const valid = ['1nt3rfl0n', 'laas2026', 'interflon', 'Interflon', 'Interflon2026'];
+        const valid = ['1nt3rfl0n', 'laas2026', 'Interflon2026'];
         if (!valid.includes(val)) {
           alert('Onjuist beheerderswachtwoord.');
           acceptingContract.value = false;
@@ -5447,7 +5447,7 @@ const app = createApp({
       unlockingCalc.value = true;
       if (isCloudMode) {
         const val = (unlockPassword.value || '').trim();
-        const valid = ['1nt3rfl0n', 'laas2026', 'interflon', 'Interflon', 'Interflon2026'];
+        const valid = ['1nt3rfl0n', 'laas2026', 'Interflon2026'];
         if (!valid.includes(val)) {
           alert('Onjuist beheerderswachtwoord.');
           unlockingCalc.value = false;

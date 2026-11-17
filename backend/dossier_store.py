@@ -24,7 +24,7 @@ DOSSIERS_ROOT = os.path.join(BASE_DIR, "dossiers")
 EXPORTS_ROOT = os.path.join(BASE_DIR, "exports")
 TEMPLATES_ROOT = os.path.join(BASE_DIR, "voorbeeldbestanden")
 CORRECT_PASSWORD = "1nt3rfl0n"
-VALID_ADMIN_PASSWORDS = {"1nt3rfl0n", "laas2026", "interflon", "Interflon", "Interflon2026"}
+VALID_ADMIN_PASSWORDS = {"1nt3rfl0n", "laas2026", "Interflon2026"}
 
 LOGO_EXTENSIONS = ['png', 'jpg', 'jpeg', 'svg', 'webp']
 
