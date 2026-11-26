@@ -4281,6 +4281,185 @@ const app = createApp({
 
     });
 
+
+    // =========================================================================
+    // DOORSMEER-MODULE (FASE 2: OPSTART / JAAR 1)
+    // =========================================================================
+    const doorsmerenItems = computed(() => {
+      const savedList = (dossier.value?.fase2?.doorsmeren) || [];
+      const savedMap = {};
+      savedList.forEach(item => {
+        const k = item.combo_key || item.product_name;
+        if (k) savedMap[k] = item;
+      });
+
+      const prods = (dossier.value?.ilac_calculation?.aggregated_products) || [];
+      return prods.map(p => {
+        const key = p.combo_key || p.product_name;
+        const saved = savedMap[key] || {};
+        const enabled = saved.enabled === true;
+        const mode = saved.mode || 'units';
+        const input_val = saved.input_val !== undefined ? saved.input_val : (saved.value !== undefined ? saved.value : 0);
+        const packaging = saved.packaging || p.packaging;
+        const unit_price = saved.unit_price !== undefined ? Number(saved.unit_price) : (p.net_unit_price || p.base_unit_price || 0.0);
+        const base_units = p.packages_needed || 0;
+
+        let extra_units = 0;
+        if (mode === 'percentage') {
+          extra_units = Math.ceil((base_units * (Number(input_val) || 0)) / 100);
+        } else {
+          extra_units = Math.max(0, parseInt(input_val) || 0);
+        }
+        const line_total = enabled ? Math.round(extra_units * unit_price * 100) / 100 : 0.0;
+
+        return {
+          combo_key: key,
+          product_name: p.product_name,
+          article_nr: p.article_nr || '-',
+          category: p.category || '',
+          packaging: packaging,
+          candidate_packagings: p.candidate_packagings || [],
+          base_units: base_units,
+          enabled: enabled,
+          mode: mode,
+          input_val: input_val,
+          extra_units: extra_units,
+          unit_price: unit_price,
+          line_total: line_total
+        };
+      });
+    });
+
+    const updateDoorsmerenItem = async (item, field, val) => {
+      if (!dossier.value) return;
+      if (!dossier.value.fase2) dossier.value.fase2 = {};
+      if (!dossier.value.fase2.doorsmeren) dossier.value.fase2.doorsmeren = [];
+
+      let target = dossier.value.fase2.doorsmeren.find(d => (d.combo_key === item.combo_key || d.product_name === item.product_name));
+      if (!target) {
+        target = {
+          combo_key: item.combo_key,
+          product_name: item.product_name,
+          article_nr: item.article_nr,
+          packaging: item.packaging,
+          unit_price: item.unit_price,
+          base_units: item.base_units,
+          enabled: item.enabled,
+          mode: item.mode,
+          input_val: item.input_val
+        };
+        dossier.value.fase2.doorsmeren.push(target);
+      }
+      target[field] = val;
+      if (field === 'packaging') {
+        const cand = (item.candidate_packagings || []).find(c => (c.packaging_desc === val || c.packaging === val));
+        if (cand && cand.unit_price) {
+          target.unit_price = cand.unit_price;
+        }
+      }
+      await saveDoorsmeren();
+    };
+
+    const saveDoorsmeren = async () => {
+      if (!dossier.value) return;
+      const list = dossier.value.fase2?.doorsmeren || [];
+      if (isCloudMode.value) {
+        const docId = `${selectedCustomer.value}__${selectedDepartment.value}__${selectedContract.value}`.replace(/[\/\s]/g, '_');
+        await CloudDB.updateDoc('dossiers', docId, {
+          dossier_json: JSON.stringify(dossier.value)
+        });
+        return;
+      }
+      try {
+        const res = await fetch('/api/dossier/doorsmeren/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            customer: selectedCustomer.value,
+            department: selectedDepartment.value,
+            contract_name: selectedContract.value,
+            doorsmeren: list
+          })
+        });
+        const data = await res.json();
+        if (res.ok && data.dossier) {
+          dossier.value = data.dossier;
+        }
+      } catch (e) {
+        console.error('Fout bij opslaan doorsmeren:', e);
+      }
+    };
+
+
+    // =========================================================================
+    // WYSIWYG EDITOR & SECTIE-UITSLUITINGEN VOOR CONTRACTVOORSTEL
+    // =========================================================================
+    const wysiwygEditor = ref(null);
+
+    const formatWysiwyg = (cmd, val = null) => {
+      if (wysiwygEditor.value) {
+        wysiwygEditor.value.focus();
+      }
+      document.execCommand(cmd, false, val);
+      if (wysiwygEditor.value) {
+        editSectionModal.value.content = wysiwygEditor.value.innerHTML;
+      }
+    };
+
+    const insertWysiwygTag = (tag) => {
+      if (wysiwygEditor.value) {
+        wysiwygEditor.value.focus();
+      }
+      document.execCommand('insertText', false, tag);
+      if (wysiwygEditor.value) {
+        editSectionModal.value.content = wysiwygEditor.value.innerHTML;
+      }
+    };
+
+    const onWysiwygInput = (e) => {
+      editSectionModal.value.content = e.target.innerHTML;
+    };
+
+    const renderSectionContent = (content) => {
+      if (!content) return '';
+      let str = String(content);
+      const custName = dossier.value?.customer || 'Klant';
+      const deptName = dossier.value?.department || 'Afdeling';
+      const durYears = `${calcYears.value} Jaar`;
+      str = str.replace(/\[Klantnaam\]/gi, custName)
+               .replace(/\[Klant\]/gi, custName)
+               .replace(/\[Afdeling\]/gi, deptName)
+               .replace(/\[Contractduur\]/gi, durYears);
+      if (!/<[a-z][\s\S]*>/i.test(str)) {
+        str = str.replace(/\n/g, '<br>');
+      }
+      return str;
+    };
+
+    const isSectionExcluded = (key) => {
+      if (!proposalData.value) return false;
+      const list = proposalData.value.excluded_sections || [];
+      return list.includes(key);
+    };
+
+    const toggleSectionExclusion = async (key) => {
+      if (!proposalData.value) return;
+      if (!proposalData.value.excluded_sections) proposalData.value.excluded_sections = [];
+      const idx = proposalData.value.excluded_sections.indexOf(key);
+      if (idx >= 0) {
+        proposalData.value.excluded_sections.splice(idx, 1);
+        showToast('Sectie hersteld in PDF export');
+      } else {
+        proposalData.value.excluded_sections.push(key);
+        showToast('Sectie uitgesloten van PDF export');
+      }
+      await saveProposalConfig();
+    };
+
+    const isContractSpecificSection = (key) => {
+      return ['huidige_situatie', 'waardepropositie'].includes(key);
+    };
+
     const openEditSectionModal = (key, title, isLegal = false) => {
 
       if (isLegal && !isUnlocked.value) {
@@ -4295,6 +4474,8 @@ const app = createApp({
 
       const texts = proposalData.value.custom_texts || {};
 
+      const currentContent = texts[key] || '';
+
       editSectionModal.value = {
 
         show: true,
@@ -4303,11 +4484,21 @@ const app = createApp({
 
         title,
 
-        content: texts[key] || '',
+        content: currentContent,
 
         isLegal
 
       };
+
+      nextTick(() => {
+
+        if (wysiwygEditor.value) {
+
+          wysiwygEditor.value.innerHTML = renderSectionContent(currentContent);
+
+        }
+
+      });
 
     };
 
@@ -4315,11 +4506,19 @@ const app = createApp({
 
       if (!proposalData.value.custom_texts) proposalData.value.custom_texts = {};
 
+      if (wysiwygEditor.value) {
+
+        editSectionModal.value.content = wysiwygEditor.value.innerHTML;
+
+      }
+
       proposalData.value.custom_texts[editSectionModal.value.key] = editSectionModal.value.content;
 
       editSectionModal.value.show = false;
 
       await saveProposalConfig();
+
+      showToast('Sectietekst opgeslagen!');
 
     };
 
@@ -6934,6 +7133,21 @@ const app = createApp({
       saveSectionContent,
 
       saveProposalConfig,
+
+      // Doorsmeer-module (Fase 2)
+      doorsmerenItems,
+      updateDoorsmerenItem,
+      saveDoorsmeren,
+
+      // WYSIWYG & PDF Uitsluitingen
+      wysiwygEditor,
+      formatWysiwyg,
+      insertWysiwygTag,
+      onWysiwygInput,
+      renderSectionContent,
+      isSectionExcluded,
+      toggleSectionExclusion,
+      isContractSpecificSection,
 
       // Standaard Pakketten & Tools Checklist & Toeslagen
 

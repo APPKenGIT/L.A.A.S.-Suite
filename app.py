@@ -607,6 +607,13 @@ def save_settings(klant, afdeling, contract_name):
             dossier['fase2']['work_hours'] = {}
         dossier['fase2']['work_hours'].update(wh_data)
 
+    # 1b. Update doorsmeren if provided
+    doorsmeren_data = data.get('doorsmeren')
+    if doorsmeren_data is not None:
+        if 'fase2' not in dossier:
+            dossier['fase2'] = {}
+        dossier['fase2']['doorsmeren'] = doorsmeren_data
+
     # 2. Update contract / calculation parameters if provided
     settings_changed = False
     if 'duration_years' in data:
@@ -888,6 +895,33 @@ def save_dossier_proposal():
         return jsonify(res)
     except Exception as e:
         return jsonify({"error": str(e)}), 400
+
+@app.route('/api/dossier/doorsmeren/save', methods=['POST'])
+def save_dossier_doorsmeren():
+    data = request.json or {}
+    customer = data.get('customer')
+    department = data.get('department')
+    contract_name = data.get('contract_name')
+    doorsmeren = data.get('doorsmeren', [])
+
+    if not customer or not department or not contract_name:
+        return jsonify({"error": "Klant, afdeling en contractnaam zijn verplicht"}), 400
+
+    try:
+        dossier = store.get_dossier(customer, department, contract_name)
+        if not dossier:
+            return jsonify({"error": "Dossier niet gevonden"}), 404
+
+        if 'fase2' not in dossier:
+            dossier['fase2'] = {}
+        dossier['fase2']['doorsmeren'] = doorsmeren
+
+        calculate_fase2_proposal(dossier)
+        store.save_dossier(customer, department, contract_name, dossier)
+        return jsonify({"status": "success", "dossier": dossier, "proposal_summary": dossier['fase2'].get('proposal_summary')})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
 
 @app.route('/api/dossier/material_groups/save', methods=['POST'])
 def save_dossier_material_groups():

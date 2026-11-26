@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <link rel="icon" type="image/svg+xml" href="static/favicon.svg">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>L.A.A.S. Suite - Lubrication As A Service</title>
@@ -283,7 +283,7 @@
             class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs transition flex items-center gap-1.5 shadow-xs cursor-pointer"
           >
             <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            <span>⚙️ Suite Instellingen</span>
+            <span>Suite Instellingen</span>
           </button>
 
           <!-- Add Buttons in Hierarchical Order -->
@@ -700,7 +700,8 @@
             <p class="text-xs text-slate-400 mt-0.5">
               Looptijd: <span class="font-bold text-slate-700">{{ calcYears }} Jaar</span> &bull; 
               Smeerpunten: <span class="font-bold text-slate-700">{{ calculationSummary.total_points || 0 }}</span> &bull;
-              Audit taaktijd: <span class="font-bold text-slate-700">{{ calculationSummary.total_audit_hours_per_year || 0 }} u/jr</span>
+              Audit taaktijd: <span class="font-bold text-slate-700">{{ calculationSummary.recurring_execution_hours_per_year || 0 }} u/jr</span>
+              <span v-if="calculationSummary.one_off_execution_hours" class="text-slate-400 font-normal text-xs ml-1">(+ {{ calculationSummary.one_off_execution_hours }} u eenmalig J1)</span>
             </p>
           </div>
         </div>
@@ -916,8 +917,6 @@
                     <th class="py-2.5 px-1 text-center">Staffel</th>
                     <th class="py-2.5 px-1.5 text-center whitespace-nowrap">Aantal Units</th>
                     <th class="py-2.5 px-1.5 text-right whitespace-nowrap">Basisprijs</th>
-                    <th class="py-2.5 px-1 text-center">Korting</th>
-                    <th class="py-2.5 px-1.5 text-right whitespace-nowrap">Netto Prijs</th>
                     <th class="py-2.5 px-2 text-right whitespace-nowrap">Lijn Totaal</th>
                   </tr>
                 </thead>
@@ -1059,23 +1058,7 @@
                         € {{ formatNum(prod.base_unit_price) }}
                       </span>
                     </td>
-                    <!-- Kolom 10: Korting % -->
-                    <td class="py-2.5 px-1 text-center whitespace-nowrap">
-                      <input 
-                        type="number" 
-                        min="0" 
-                        max="100" 
-                        step="1"
-                        :value="prod.discount_pct || 0"
-                        @change="updateItemDiscount(prod.article_nr, $event.target.value)"
-                        class="w-11 text-center py-0.5 rounded-lg border border-slate-200 text-xs font-mono focus:outline-hidden focus:ring-1 focus:ring-sky-500"
-                      >
-                    </td>
-                    <!-- Kolom 11: Netto Prijs -->
-                    <td class="py-2.5 px-1.5 text-right text-slate-700 font-mono font-semibold text-[11px] whitespace-nowrap">
-                      € {{ formatNum(prod.net_unit_price) }}
-                    </td>
-                    <!-- Kolom 12: Lijn Totaal -->
+                    <!-- Kolom 10: Lijn Totaal -->
                     <td class="py-2.5 px-2 text-right font-bold font-mono text-emerald-700 text-xs whitespace-nowrap">
                       € {{ formatNum(prod.line_total) }}
                     </td>
@@ -1084,7 +1067,7 @@
                 <!-- Table Footer -->
                 <tfoot class="bg-slate-50 font-bold border-t border-slate-200">
                   <tr>
-                    <td colspan="11" class="py-3 px-2 uppercase tracking-wider text-slate-700 text-right text-xs">
+                    <td colspan="9" class="py-3 px-2 uppercase tracking-wider text-slate-700 text-right text-xs">
                       Subtotaal Smeermiddelen ({{ calcYears }} Jaar):
                     </td>
                     <td class="py-3 px-2 text-right font-mono text-emerald-700 text-xs font-bold whitespace-nowrap">
@@ -1338,6 +1321,151 @@
           </div>
         </div>
 
+        <!-- SECTION 1B: DOORSMEER-MODULE (OPSTART / JAAR 1) -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold shadow-xs shrink-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+              </div>
+              <div>
+                <h3 class="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                  <span>Doorsmeren &amp; Initiële Vulling</span>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">Opstart / Jaar 1</span>
+                </h3>
+                <p class="text-xs text-slate-500">
+                  Geef per berekend smeermiddel aan of er extra verpakkingen benodigd zijn voor initiële doorsmering (leidingen vullen, startvoorraad). Kies tussen vaste stuks of een percentage van de berekende behoefte.
+                </p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 bg-amber-50 border border-amber-200 px-4 py-2 rounded-xl shrink-0">
+              <span class="text-xs font-semibold text-amber-900">Totaal Doorsmeren:</span>
+              <span class="text-sm font-bold font-mono text-amber-950">€ {{ formatNum(proposalSummary.doorsmeren_total || 0) }}</span>
+            </div>
+          </div>
+
+          <!-- Doorsmeer Products Table -->
+          <div v-if="doorsmerenItems && doorsmerenItems.length > 0" class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
+                <tr>
+                  <th class="py-2.5 px-3">Productnaam</th>
+                  <th class="py-2.5 px-3 text-center">Fase 1 Behoefte</th>
+                  <th class="py-2.5 px-3 text-center">Doorsmeren?</th>
+                  <th class="py-2.5 px-3 text-center">Invoermodus</th>
+                  <th class="py-2.5 px-3 text-center">Invoerwaarde</th>
+                  <th class="py-2.5 px-3">Verpakking</th>
+                  <th class="py-2.5 px-3 text-center">Extra Units</th>
+                  <th class="py-2.5 px-3 text-right">Kost Jaar 1</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <tr v-for="item in doorsmerenItems" :key="item.combo_key" class="hover:bg-slate-50 transition" :class="item.enabled ? 'bg-amber-50/30' : ''">
+                  <!-- Product info -->
+                  <td class="py-2.5 px-3">
+                    <div class="font-bold text-slate-900">{{ item.product_name }}</div>
+                    <div class="text-[10px] text-slate-400 font-mono">Art. {{ item.article_nr || '-' }} &bull; {{ item.category }}</div>
+                  </td>
+                  <!-- Base units from Fase 1 -->
+                  <td class="py-2.5 px-3 text-center font-mono text-slate-600">
+                    {{ item.base_units }} units
+                  </td>
+                  <!-- Enabled switch -->
+                  <td class="py-2.5 px-3 text-center">
+                    <label class="relative inline-flex items-center cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        :checked="item.enabled" 
+                        @change="updateDoorsmerenItem(item, 'enabled', $event.target.checked)"
+                        class="sr-only peer"
+                      >
+                      <div class="w-8 h-4.5 bg-slate-200 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-amber-500"></div>
+                    </label>
+                  </td>
+                  <!-- Mode switch (Units vs Percentage) -->
+                  <td class="py-2.5 px-3 text-center">
+                    <div v-if="item.enabled" class="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-0.5">
+                      <button 
+                        type="button" 
+                        @click="updateDoorsmerenItem(item, 'mode', 'units')"
+                        :class="item.mode === 'units' ? 'bg-amber-500 text-white font-bold shadow-2xs' : 'text-slate-500 hover:text-slate-800'"
+                        class="px-2 py-0.5 rounded text-[10px] transition cursor-pointer"
+                      >
+                        Stuks
+                      </button>
+                      <button 
+                        type="button" 
+                        @click="updateDoorsmerenItem(item, 'mode', 'percentage')"
+                        :class="item.mode === 'percentage' ? 'bg-amber-500 text-white font-bold shadow-2xs' : 'text-slate-500 hover:text-slate-800'"
+                        class="px-2 py-0.5 rounded text-[10px] transition cursor-pointer"
+                      >
+                        % Extra
+                      </button>
+                    </div>
+                    <span v-else class="text-slate-400 font-mono text-[11px]">-</span>
+                  </td>
+                  <!-- Input field -->
+                  <td class="py-2.5 px-3 text-center">
+                    <div v-if="item.enabled" class="flex items-center justify-center gap-1">
+                      <input 
+                        type="number" 
+                        min="0" 
+                        :max="item.mode === 'percentage' ? 500 : 9999"
+                        :step="item.mode === 'percentage' ? 5 : 1"
+                        :value="item.input_val"
+                        @change="updateDoorsmerenItem(item, 'input_val', Number($event.target.value) || 0)"
+                        class="w-16 text-center py-1 px-2 rounded-lg border border-slate-300 text-xs font-mono font-bold focus:ring-2 focus:ring-amber-400 focus:border-amber-500 outline-none"
+                      >
+                      <span class="text-slate-500 font-mono text-[11px]">{{ item.mode === 'percentage' ? '%' : 'st' }}</span>
+                    </div>
+                    <span v-else class="text-slate-400 font-mono text-[11px]">-</span>
+                  </td>
+                  <!-- Packaging selection -->
+                  <td class="py-2.5 px-3">
+                    <select 
+                      v-if="item.enabled && item.candidate_packagings && item.candidate_packagings.length > 1"
+                      :value="item.packaging"
+                      @change="updateDoorsmerenItem(item, 'packaging', $event.target.value)"
+                      class="py-1 px-2 rounded-lg border border-slate-200 bg-white text-xs text-slate-800 focus:ring-1 focus:ring-amber-400 outline-none max-w-[180px]"
+                    >
+                      <option v-for="cand in item.candidate_packagings" :key="cand.packaging_desc || cand.packaging" :value="cand.packaging_desc || cand.packaging">
+                        {{ cand.packaging_desc || cand.packaging }} (€ {{ formatNum(cand.unit_price) }})
+                      </option>
+                    </select>
+                    <span v-else-if="item.enabled" class="text-slate-700 font-medium">
+                      {{ item.packaging }} <span class="text-slate-400 font-mono">(€ {{ formatNum(item.unit_price) }})</span>
+                    </span>
+                    <span v-else class="text-slate-400">
+                      {{ item.packaging }}
+                    </span>
+                  </td>
+                  <!-- Calculated extra units -->
+                  <td class="py-2.5 px-3 text-center font-mono font-bold" :class="item.enabled ? 'text-amber-800 text-xs' : 'text-slate-400'">
+                    {{ item.enabled ? item.extra_units + ' stuks' : '-' }}
+                  </td>
+                  <!-- Line total -->
+                  <td class="py-2.5 px-3 text-right font-mono font-bold" :class="item.enabled ? 'text-amber-900' : 'text-slate-400'">
+                    € {{ formatNum(item.line_total) }}
+                  </td>
+                </tr>
+              </tbody>
+              <tfoot class="bg-amber-50/60 font-bold border-t border-amber-200 text-amber-950">
+                <tr>
+                  <td colspan="7" class="py-2.5 px-3 text-right uppercase tracking-wider text-xs">
+                    Subtotaal Doorsmeren &amp; Eerste Vulling (Eenmalig Jaar 1):
+                  </td>
+                  <td class="py-2.5 px-3 text-right font-mono text-sm text-amber-950 font-bold">
+                    € {{ formatNum(proposalSummary.doorsmeren_total || 0) }}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+          <div v-else class="py-8 text-center text-slate-400 text-xs bg-slate-50 rounded-xl border border-dashed border-slate-200">
+            Geen berekende smeermiddelen gevonden in Fase 1 om doorsmeren voor te configureren.
+          </div>
+        </div>
+
         <!-- SECTION 2: SAMENVATTING WERKUREN & UITVOERING -->
         <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-6">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
@@ -1438,6 +1566,13 @@
               <div class="flex items-center justify-between py-1 border-b border-slate-200/60">
                 <span class="text-slate-600 font-medium">1. Smeermiddelen &amp; Productbehoefte:</span>
                 <span class="font-mono font-bold text-slate-900">€ {{ formatNum(proposalSummary.products_total) }}</span>
+              </div>
+              <div v-if="proposalSummary.doorsmeren_total > 0" class="flex items-center justify-between py-1 border-b border-slate-200/60 bg-amber-50/50 px-2 rounded-lg">
+                <span class="text-amber-900 font-semibold flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                  1b. Eenmalig Doorsmeren &amp; Initiële Vulling (Jaar 1):
+                </span>
+                <span class="font-mono font-bold text-amber-950">€ {{ formatNum(proposalSummary.doorsmeren_total) }}</span>
               </div>
               <div class="flex items-center justify-between py-1 border-b border-slate-200/60">
                 <span class="text-slate-600 font-medium">2. Hardware, Tools &amp; Materialen:</span>
@@ -1852,29 +1987,68 @@
               </div>
 
               <!-- Inleiding Tekst -->
-              <div class="space-y-2 relative group">
+              <div class="space-y-2 relative group p-3 rounded-2xl transition" :class="isSectionExcluded('inleiding') ? 'print:hidden bg-slate-50 border-2 border-dashed border-slate-300 opacity-60' : ''">
+                <!-- Exclusion notification banner on screen -->
+                <div v-if="isSectionExcluded('inleiding')" class="print:hidden flex items-center justify-between text-xs text-rose-700 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-lg mb-2">
+                  <span class="flex items-center gap-1 font-semibold">
+                    <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                    Deze sectie is uitgesloten van de uiteindelijke PDF
+                  </span>
+                  <button @click="toggleSectionExclusion('inleiding')" class="text-sky-600 hover:text-sky-800 font-bold underline cursor-pointer text-[11px]">
+                    ↩️ Herstel in PDF
+                  </button>
+                </div>
+
                 <div class="flex items-center justify-between">
                   <h4 class="text-sm font-bold text-slate-900">Inleiding</h4>
-                  <button @click="openEditSectionModal('inleiding', 'Inleiding & Doelstellingen')" class="text-sky-600 hover:text-sky-800 text-xs font-semibold print:hidden cursor-pointer">
-                    ✏️ Bewerk
-                  </button>
+                  <div class="flex items-center gap-2 print:hidden">
+                    <button @click="toggleSectionExclusion('inleiding')" class="text-slate-400 hover:text-rose-600 text-[11px] font-semibold cursor-pointer">
+                      {{ isSectionExcluded('inleiding') ? 'Herstel' : 'Uitsluiten uit PDF' }}
+                    </button>
+                    <button @click="openEditSectionModal('inleiding', 'Inleiding & Doelstellingen')" class="text-sky-600 hover:text-sky-800 text-xs font-semibold cursor-pointer">
+                      ✏️ Bewerk
+                    </button>
+                  </div>
                 </div>
-                <p class="text-xs text-slate-600 whitespace-pre-line leading-relaxed">
-                  {{ proposalData.custom_texts?.inleiding }}
-                </p>
+                <div class="text-xs text-slate-600 leading-relaxed" v-html="renderSectionContent(proposalData.custom_texts?.inleiding)"></div>
               </div>
 
-              <!-- Huidige Situatie Tekst -->
-              <div class="space-y-2 relative group border-t border-slate-100 pt-4">
-                <div class="flex items-center justify-between">
-                  <h4 class="text-sm font-bold text-slate-900">Huidige situatie</h4>
-                  <button @click="openEditSectionModal('huidige_situatie', 'Huidige Situatie & Behoefte')" class="text-sky-600 hover:text-sky-800 text-xs font-semibold print:hidden cursor-pointer">
-                    ✏️ Bewerk
+              <!-- Huidige Situatie Tekst (Contractspecifiek) -->
+              <div class="space-y-2 relative group border-t border-slate-100 pt-4 p-3 rounded-2xl transition" :class="isSectionExcluded('huidige_situatie') ? 'print:hidden bg-slate-50 border-2 border-dashed border-slate-300 opacity-60' : ''">
+                <!-- Highlight banner for contract-specific check (screen only) -->
+                <div v-if="!isSectionExcluded('huidige_situatie')" class="print:hidden mb-2 px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-300 text-amber-900 text-xs flex items-center justify-between shadow-2xs">
+                  <span class="flex items-center gap-1.5 font-bold">
+                    <svg class="w-4 h-4 text-amber-600 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                    ⚠️ Contractspecifieke sectie — controleer inhoud voor {{ dossier.customer }}!
+                  </span>
+                  <button @click="openEditSectionModal('huidige_situatie', 'Huidige Situatie & Behoefte')" class="text-amber-800 hover:text-amber-950 font-bold underline cursor-pointer text-[11px]">
+                    Controleer &amp; Bewerk
                   </button>
                 </div>
-                <p class="text-xs text-slate-600 whitespace-pre-line leading-relaxed">
-                  {{ proposalData.custom_texts?.huidige_situatie }}
-                </p>
+
+                <!-- Exclusion notification banner on screen -->
+                <div v-if="isSectionExcluded('huidige_situatie')" class="print:hidden flex items-center justify-between text-xs text-rose-700 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-lg mb-2">
+                  <span class="flex items-center gap-1 font-semibold">
+                    <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                    Deze sectie is uitgesloten van de uiteindelijke PDF
+                  </span>
+                  <button @click="toggleSectionExclusion('huidige_situatie')" class="text-sky-600 hover:text-sky-800 font-bold underline cursor-pointer text-[11px]">
+                    ↩️ Herstel in PDF
+                  </button>
+                </div>
+
+                <div class="flex items-center justify-between">
+                  <h4 class="text-sm font-bold text-slate-900">Huidige situatie</h4>
+                  <div class="flex items-center gap-2 print:hidden">
+                    <button @click="toggleSectionExclusion('huidige_situatie')" class="text-slate-400 hover:text-rose-600 text-[11px] font-semibold cursor-pointer">
+                      {{ isSectionExcluded('huidige_situatie') ? 'Herstel' : 'Uitsluiten uit PDF' }}
+                    </button>
+                    <button @click="openEditSectionModal('huidige_situatie', 'Huidige Situatie & Behoefte')" class="text-sky-600 hover:text-sky-800 text-xs font-semibold cursor-pointer">
+                      ✏️ Bewerk
+                    </button>
+                  </div>
+                </div>
+                <div class="text-xs text-slate-600 leading-relaxed" v-html="renderSectionContent(proposalData.custom_texts?.huidige_situatie)"></div>
               </div>
 
               <!-- Scope & Fig. 1 Scope Tabel -->
@@ -1941,17 +2115,42 @@
                 </ol>
               </div>
 
-              <!-- Waardepropositie Tekst -->
-              <div class="space-y-2 border-t border-slate-100 pt-4">
-                <div class="flex items-center justify-between">
-                  <h4 class="text-sm font-bold text-slate-900">Waardepropositie</h4>
-                  <button @click="openEditSectionModal('waardepropositie', 'Waardepropositie Toelichting')" class="text-sky-600 hover:text-sky-800 text-xs font-semibold print:hidden cursor-pointer">
-                    ✏️ Bewerk
+              <!-- Waardepropositie Tekst (Contractspecifiek) -->
+              <div class="space-y-2 border-t border-slate-100 pt-4 p-3 rounded-2xl transition" :class="isSectionExcluded('waardepropositie') ? 'print:hidden bg-slate-50 border-2 border-dashed border-slate-300 opacity-60' : ''">
+                <!-- Highlight banner for contract-specific check (screen only) -->
+                <div v-if="!isSectionExcluded('waardepropositie')" class="print:hidden mb-2 px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-300 text-amber-900 text-xs flex items-center justify-between shadow-2xs">
+                  <span class="flex items-center gap-1.5 font-bold">
+                    <svg class="w-4 h-4 text-amber-600 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                    ⚠️ Contractspecifieke sectie — controleer besparingsclaims voor {{ dossier.customer }}!
+                  </span>
+                  <button @click="openEditSectionModal('waardepropositie', 'Waardepropositie Toelichting')" class="text-amber-800 hover:text-amber-950 font-bold underline cursor-pointer text-[11px]">
+                    Controleer &amp; Bewerk
                   </button>
                 </div>
-                <p class="text-xs text-slate-600 whitespace-pre-line leading-relaxed">
-                  {{ proposalData.custom_texts?.waardepropositie }}
-                </p>
+
+                <!-- Exclusion notification banner on screen -->
+                <div v-if="isSectionExcluded('waardepropositie')" class="print:hidden flex items-center justify-between text-xs text-rose-700 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-lg mb-2">
+                  <span class="flex items-center gap-1 font-semibold">
+                    <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                    Deze sectie is uitgesloten van de uiteindelijke PDF
+                  </span>
+                  <button @click="toggleSectionExclusion('waardepropositie')" class="text-sky-600 hover:text-sky-800 font-bold underline cursor-pointer text-[11px]">
+                    ↩️ Herstel in PDF
+                  </button>
+                </div>
+
+                <div class="flex items-center justify-between">
+                  <h4 class="text-sm font-bold text-slate-900">Waardepropositie</h4>
+                  <div class="flex items-center gap-2 print:hidden">
+                    <button @click="toggleSectionExclusion('waardepropositie')" class="text-slate-400 hover:text-rose-600 text-[11px] font-semibold cursor-pointer">
+                      {{ isSectionExcluded('waardepropositie') ? 'Herstel' : 'Uitsluiten uit PDF' }}
+                    </button>
+                    <button @click="openEditSectionModal('waardepropositie', 'Waardepropositie Toelichting')" class="text-sky-600 hover:text-sky-800 text-xs font-semibold cursor-pointer">
+                      ✏️ Bewerk
+                    </button>
+                  </div>
+                </div>
+                <div class="text-xs text-slate-600 leading-relaxed" v-html="renderSectionContent(proposalData.custom_texts?.waardepropositie)"></div>
               </div>
 
               <!-- Businesscase Grafiek & Tabel (Fig. 2 & Fig. 6) -->
@@ -2098,6 +2297,16 @@
                         <td class="py-2 px-4 text-right font-mono text-slate-700">€ {{ formatNum(proposalSummary.products_total * 0.06) }}</td>
                       </tr>
 
+                      <!-- Doorsmeren Row in Proposal Page 5 -->
+                      <tr v-if="proposalSummary.doorsmeren_total > 0" class="hover:bg-amber-50 bg-amber-50/20">
+                        <td class="py-2 px-4 font-bold text-amber-950 flex items-center gap-1.5">
+                          <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                          <span>Eenmalig Doorsmeren &amp; Vulling (Jaar 1)</span>
+                        </td>
+                        <td class="py-2 px-4 text-center font-mono text-slate-600">Eenmalig</td>
+                        <td class="py-2 px-4 text-right font-mono font-bold text-amber-900">€ {{ formatNum(proposalSummary.doorsmeren_total) }}</td>
+                        <td class="py-2 px-4 text-right font-mono text-slate-700">€ {{ formatNum(proposalSummary.doorsmeren_total / calcYears) }}</td>
+                      </tr>
                       <!-- Dynamic Rows for each Material Group Card from Fase 2 -->
                       <tr v-for="grp in proposalMaterialGroups" :key="grp.id" class="hover:bg-slate-50 bg-indigo-50/20">
                         <td class="py-2 px-4 font-bold text-indigo-950 flex items-center gap-1.5">
@@ -2338,7 +2547,18 @@
               </div>
 
               <!-- Leveringsvoorwaarden (BEVEILIGD ONDER BEHEERDERSMODUS) -->
-              <div class="space-y-2 border-t border-slate-100 pt-4">
+              <div class="space-y-2 border-t border-slate-100 pt-4 p-3 rounded-2xl transition" :class="isSectionExcluded('leveringsvoorwaarden') ? 'print:hidden bg-slate-50 border-2 border-dashed border-slate-300 opacity-60' : ''">
+                <!-- Exclusion notification banner on screen -->
+                <div v-if="isSectionExcluded('leveringsvoorwaarden')" class="print:hidden flex items-center justify-between text-xs text-rose-700 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-lg mb-2">
+                  <span class="flex items-center gap-1 font-semibold">
+                    <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                    Deze sectie is uitgesloten van de uiteindelijke PDF
+                  </span>
+                  <button @click="toggleSectionExclusion('leveringsvoorwaarden')" class="text-sky-600 hover:text-sky-800 font-bold underline cursor-pointer text-[11px]">
+                    ↩️ Herstel in PDF
+                  </button>
+                </div>
+
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-2">
                     <h4 class="text-sm font-bold text-slate-900">Leveringsvoorwaarden &amp; Juridische bepalingen</h4>
@@ -2347,13 +2567,17 @@
                       <span>Juridisch Vergrendeld</span>
                     </span>
                   </div>
-                  <button @click="openEditSectionModal('leveringsvoorwaarden', 'Leveringsvoorwaarden & Juridische Clausules', true)" class="text-sky-600 hover:text-sky-800 text-xs font-semibold print:hidden cursor-pointer flex items-center gap-1">
-                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                    <span>Bewerken (Beheerder)</span>
-                  </button>
+                  <div class="flex items-center gap-2 print:hidden">
+                    <button @click="toggleSectionExclusion('leveringsvoorwaarden')" class="text-slate-400 hover:text-rose-600 text-[11px] font-semibold cursor-pointer">
+                      {{ isSectionExcluded('leveringsvoorwaarden') ? 'Herstel' : 'Uitsluiten uit PDF' }}
+                    </button>
+                    <button @click="openEditSectionModal('leveringsvoorwaarden', 'Leveringsvoorwaarden & Juridische Clausules', true)" class="text-sky-600 hover:text-sky-800 text-xs font-semibold cursor-pointer flex items-center gap-1">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                      <span>Bewerken (Beheerder)</span>
+                    </button>
+                  </div>
                 </div>
-                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs text-slate-700 whitespace-pre-line leading-relaxed font-mono text-[11px]">
-                  {{ proposalData.custom_texts?.leveringsvoorwaarden }}
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs text-slate-700 leading-relaxed font-mono text-[11px]" v-html="renderSectionContent(proposalData.custom_texts?.leveringsvoorwaarden)">
                 </div>
               </div>
             </div>
@@ -4084,8 +4308,58 @@
         </button>
       </div>
 
-      <div class="space-y-3 text-xs">
-        <textarea v-model="editSectionModal.content" rows="10" class="w-full p-3 rounded-xl border border-slate-300 text-xs font-sans leading-relaxed focus:ring-2 focus:ring-sky-200 outline-none"></textarea>
+      <!-- WYSIWYG Toolbar & Editor -->
+      <div class="space-y-2">
+        <div class="flex flex-wrap items-center gap-1 p-1.5 bg-slate-100 rounded-xl border border-slate-200">
+          <button type="button" @click="formatWysiwyg('bold')" title="Vetgedrukt" class="p-1.5 rounded-lg hover:bg-white text-slate-700 font-bold text-xs transition cursor-pointer">
+            <strong class="font-extrabold px-1">B</strong>
+          </button>
+          <button type="button" @click="formatWysiwyg('italic')" title="Cursief" class="p-1.5 rounded-lg hover:bg-white text-slate-700 italic text-xs transition cursor-pointer">
+            <span class="italic px-1">I</span>
+          </button>
+          <button type="button" @click="formatWysiwyg('underline')" title="Onderstreept" class="p-1.5 rounded-lg hover:bg-white text-slate-700 underline text-xs transition cursor-pointer">
+            <span class="underline px-1">U</span>
+          </button>
+          <div class="w-px h-4 bg-slate-300 mx-1"></div>
+          <button type="button" @click="formatWysiwyg('insertUnorderedList')" title="Opsommingstekens" class="p-1.5 rounded-lg hover:bg-white text-slate-700 text-xs transition cursor-pointer flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16M2 6h.01M2 12h.01M2 18h.01"/></svg>
+            <span class="text-[10px]">Lijst</span>
+          </button>
+          <button type="button" @click="formatWysiwyg('insertOrderedList')" title="Genummerde lijst" class="p-1.5 rounded-lg hover:bg-white text-slate-700 text-xs transition cursor-pointer flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 6h13M7 12h13M7 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+            <span class="text-[10px]">1. 2. 3.</span>
+          </button>
+          <button type="button" @click="formatWysiwyg('formatBlock', '<h4>')" title="Tussenkop" class="p-1.5 rounded-lg hover:bg-white text-slate-700 font-bold text-xs transition cursor-pointer">
+            <span class="text-[10px]">Kop</span>
+          </button>
+          <button type="button" @click="formatWysiwyg('removeFormat')" title="Opmaak wissen" class="p-1.5 rounded-lg hover:bg-white text-slate-500 text-xs transition cursor-pointer">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+          <div class="w-px h-4 bg-slate-300 mx-1"></div>
+          <div class="flex items-center gap-1 ml-auto">
+            <span class="text-[10px] text-slate-400">Tag invoegen:</span>
+            <button type="button" @click="insertWysiwygTag('[Klantnaam]')" title="Klantnaam dynamisch invoegen" class="px-2 py-0.5 rounded-md bg-white border border-slate-200 hover:border-sky-400 text-sky-700 font-mono text-[10px] cursor-pointer">
+              [Klantnaam]
+            </button>
+            <button type="button" @click="insertWysiwygTag('[Afdeling]')" title="Afdelingsnaam dynamisch invoegen" class="px-2 py-0.5 rounded-md bg-white border border-slate-200 hover:border-sky-400 text-sky-700 font-mono text-[10px] cursor-pointer">
+              [Afdeling]
+            </button>
+            <button type="button" @click="insertWysiwygTag('[Contractduur]')" title="Contractduur dynamisch invoegen" class="px-2 py-0.5 rounded-md bg-white border border-slate-200 hover:border-sky-400 text-sky-700 font-mono text-[10px] cursor-pointer">
+              [Contractduur]
+            </button>
+          </div>
+        </div>
+
+        <!-- Editable WYSIWYG Content Area -->
+        <div 
+          ref="wysiwygEditor" 
+          contenteditable="true" 
+          @input="onWysiwygInput" 
+          class="w-full min-h-[220px] max-h-[380px] overflow-y-auto p-4 rounded-xl border border-slate-300 bg-white text-xs font-sans leading-relaxed focus:ring-2 focus:ring-sky-300 focus:border-sky-500 outline-none select-text cursor-text"
+        ></div>
+        <p class="text-[10px] text-slate-400">
+          💡 Typ direct in het venster zoals in Word of selecteer tekst om direct vet, cursief of lijsten toe te passen.
+        </p>
       </div>
 
       <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">

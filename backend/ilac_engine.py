@@ -971,6 +971,37 @@ def calculate_fase2_proposal(dossier):
         m['line_total'] = line_tot
         hardware_cost += line_tot
     hardware_cost = round(hardware_cost, 2)
+
+    # 2b. Doorsmeren & Initiële Vulling (Opstart / Jaar 1)
+    doorsmeren_list = fase2.get('doorsmeren', [])
+    doorsmeren_total = 0.0
+    doorsmeren_breakdown = []
+    import math
+    for item in doorsmeren_list:
+        if item.get('enabled'):
+            base_u = float(item.get('base_units') or 0.0)
+            mode = item.get('mode', 'units')
+            inp = float(item.get('input_val') if item.get('input_val') is not None else (item.get('value') or 0.0))
+            if mode == 'percentage':
+                extra_u = int(math.ceil(base_u * (inp / 100.0)))
+            else:
+                extra_u = int(math.ceil(inp))
+            u_price = float(item.get('unit_price') or item.get('base_unit_price') or 0.0)
+            line_cost = round(extra_u * u_price, 2)
+            doorsmeren_total += line_cost
+            doorsmeren_breakdown.append({
+                'combo_key': item.get('combo_key'),
+                'product_name': item.get('product_name'),
+                'article_nr': item.get('article_nr', '-'),
+                'packaging': item.get('packaging') or item.get('packaging_desc', ''),
+                'mode': mode,
+                'input_val': inp,
+                'base_units': base_u,
+                'extra_units': extra_u,
+                'unit_price': u_price,
+                'line_total': line_cost
+            })
+    doorsmeren_total = round(doorsmeren_total, 2)
     
     # 3. Work hours parameters
     hourly_rate_partner = float(wh.get('hourly_rate_partner', 63.0))
@@ -1039,7 +1070,7 @@ def calculate_fase2_proposal(dossier):
     total_services_cost = round(management_cost + analyses_cost + software_cost + training_cost, 2)
     
     # Baseline Grand contract total
-    grand_contract_total = round(products_cost + hardware_cost + total_execution_cost + total_services_cost, 2)
+    grand_contract_total = round(products_cost + doorsmeren_total + hardware_cost + total_execution_cost + total_services_cost, 2)
     total_months = years * 12
     base_monthly_fee = round(grand_contract_total / total_months, 2) if total_months > 0 else 0.0
 
@@ -1174,6 +1205,8 @@ def calculate_fase2_proposal(dossier):
         'contract_months': total_months,
         'products_total': products_cost,
         'products_annual': round(products_cost / years, 2),
+        'doorsmeren_total': doorsmeren_total,
+        'doorsmeren_breakdown': doorsmeren_breakdown,
         'hardware_total': hardware_cost,
         'hardware_annual': round(hardware_cost / years, 2),
         'work_days_year1': int(days_y1),

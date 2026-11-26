@@ -157,6 +157,58 @@ def calculate_startup_order(dossier, months=3, include_hardware=True):
                 'margin': round(line_tot - tot_purch, 2)
             })
 
+    # 2b. Add doorsmeren items from Fase 2 if enabled
+    fase2 = dossier.get('fase2', {})
+    doorsmeren_list = fase2.get('doorsmeren', [])
+    for d in doorsmeren_list:
+        if d.get('enabled'):
+            base_u = float(d.get('base_units') or 0.0)
+            mode = d.get('mode', 'units')
+            inp = float(d.get('input_val') if d.get('input_val') is not None else (d.get('value') or 0.0))
+            if mode == 'percentage':
+                extra_u = int(math.ceil(base_u * (inp / 100.0)))
+            else:
+                extra_u = int(math.ceil(inp))
+            if extra_u > 0:
+                prod_name = d.get('product_name')
+                art_nr = d.get('article_nr', '-')
+                pack_desc = d.get('packaging') or d.get('packaging_desc', '')
+                unit_p = float(d.get('unit_price', 0.0))
+                existing_item = next((item for item in startup_items if (art_nr != '-' and item.get('article_nr') == art_nr) or item.get('product_name') == prod_name), None)
+                if existing_item:
+                    existing_item['qty'] += extra_u
+                    existing_item['suggested_qty'] += extra_u
+                    existing_item['line_total'] = round(existing_item['qty'] * existing_item['net_unit_price'], 2)
+                    existing_item['total_purchase'] = round(existing_item['qty'] * existing_item['purchase_unit'], 2)
+                    existing_item['doorsmeren_extra'] = extra_u
+                else:
+                    purch_u = round(unit_p * 0.55, 2)
+                    startup_items.append({
+                        'id': f"doorsmeer_{len(startup_items)+1}",
+                        'item_type': 'consumable',
+                        'article_nr': art_nr,
+                        'product_name': prod_name,
+                        'description': f"{prod_name} - {pack_desc} (Doorsmeren)".strip(),
+                        'tool': 'Doorsmeren',
+                        'category': 'Smeermiddelen',
+                        'packaging': pack_desc,
+                        'pack_volume': 1.0,
+                        'pack_unit': 'stuks',
+                        'needed_volume_raw': extra_u,
+                        'volume_unit': 'stuks',
+                        'one_off_volume': extra_u,
+                        'recurring_volume': 0.0,
+                        'qty': extra_u,
+                        'suggested_qty': extra_u,
+                        'base_unit_price': unit_p,
+                        'discount_pct': 0.0,
+                        'net_unit_price': unit_p,
+                        'line_total': round(extra_u * unit_p, 2),
+                        'purchase_unit': purch_u,
+                        'total_purchase': round(extra_u * purch_u, 2),
+                        'doorsmeren_extra': extra_u
+                    })
+
     # 3. Add Hardware & Tools from Fase 2 if requested
     if include_hardware:
         fase2 = dossier.get('fase2', {})
