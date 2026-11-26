@@ -117,7 +117,7 @@ const CloudDB = {
 const isCloudMode = !window.location.port || window.location.hostname.includes('github.io') || window.location.protocol === 'file:';
 let db = null;
 
-const { createApp, ref, computed, onMounted } = Vue;
+const { createApp, ref, computed, onMounted, nextTick } = Vue;
 
 const app = createApp({
 
@@ -2469,9 +2469,13 @@ const app = createApp({
 
       const interflonRate = parseFloat(wh.interflon_hourly_rate) || 110;
 
-      const pmHours = totalPartnerHours * ((parseFloat(wh.pm_pct) || 0) / 100.0);
+      const pmBaseDays = Math.max(0, totalDays - (parseFloat(dossier.value?.fase2?.work_hours?.doorsmeren_days) || 0));
 
-      const supHours = totalPartnerHours * ((parseFloat(wh.supervision_pct) || 0) / 100.0);
+      const pmBasePartnerHours = pmBaseDays * hoursPerDay;
+
+      const pmHours = pmBasePartnerHours * ((parseFloat(wh.pm_pct) || 0) / 100.0);
+
+      const supHours = pmBasePartnerHours * ((parseFloat(wh.supervision_pct) || 0) / 100.0);
 
       const mgmtCost = (pmHours + supHours) * interflonRate;
 
@@ -4167,6 +4171,8 @@ const app = createApp({
 
       chosenGrandTotal += (summary.products_total || 0);
 
+      chosenGrandTotal += (summary.doorsmeren_total || 0);
+
       (proposalMaterialGroups.value || []).forEach(grp => {
 
         if (isGroupToggled(grp.id)) {
@@ -4303,6 +4309,9 @@ const app = createApp({
         const packaging = saved.packaging || p.packaging;
         const unit_price = saved.unit_price !== undefined ? Number(saved.unit_price) : (p.net_unit_price || p.base_unit_price || 0.0);
         const base_units = p.packages_needed || 0;
+        const suggested_hours = Math.round((Number(p.single_pass_hours) || 0) * 100) / 100;
+        const is_manual_hours = Boolean(saved.is_manual_hours);
+        const hours = is_manual_hours && saved.hours !== undefined ? Math.max(0, Math.round((Number(saved.hours) || 0) * 100) / 100) : suggested_hours;
 
         let extra_units = 0;
         if (mode === 'percentage') {
@@ -4325,16 +4334,17 @@ const app = createApp({
           input_val: input_val,
           extra_units: extra_units,
           unit_price: unit_price,
-          line_total: line_total
+          line_total: line_total,
+          suggested_hours: suggested_hours,
+          hours: hours,
+          is_manual_hours: is_manual_hours
         };
       });
     });
 
-    const updateDoorsmerenItem = async (item, field, val) => {
-      if (!dossier.value) return;
+    const ensureDoorsmerenTarget = (item) => {
       if (!dossier.value.fase2) dossier.value.fase2 = {};
       if (!dossier.value.fase2.doorsmeren) dossier.value.fase2.doorsmeren = [];
-
       let target = dossier.value.fase2.doorsmeren.find(d => (d.combo_key === item.combo_key || d.product_name === item.product_name));
       if (!target) {
         target = {
@@ -4346,10 +4356,19 @@ const app = createApp({
           base_units: item.base_units,
           enabled: item.enabled,
           mode: item.mode,
-          input_val: item.input_val
+          input_val: item.input_val,
+          suggested_hours: item.suggested_hours,
+          hours: item.hours,
+          is_manual_hours: item.is_manual_hours
         };
         dossier.value.fase2.doorsmeren.push(target);
       }
+      return target;
+    };
+
+    const updateDoorsmerenItem = async (item, field, val) => {
+      if (!dossier.value) return;
+      const target = ensureDoorsmerenTarget(item);
       target[field] = val;
       if (field === 'packaging') {
         const cand = (item.candidate_packagings || []).find(c => (c.packaging_desc === val || c.packaging === val));
@@ -4360,14 +4379,88 @@ const app = createApp({
       await saveDoorsmeren();
     };
 
+    const updateDoorsmerenHours = async (item, rawVal) => {
+      if (!dossier.value) return;
+      const target = ensureDoorsmerenTarget(item);
+      const parsed = Math.max(0, Math.round((parseFloat(rawVal) || 0) * 100) / 100);
+      target.hours = parsed;
+      target.is_manual_hours = true;
+      await saveDoorsmeren();
+    };
+
+    const resetDoorsmerenHours = async (item) => {
+      if (!dossier.value) return;
+      const target = ensureDoorsmerenTarget(item);
+      target.hours = item.suggested_hours || 0;
+      target.is_manual_hours = false;
+      await saveDoorsmeren();
+    };
+
     const saveDoorsmeren = async () => {
       if (!dossier.value) return;
       const list = dossier.value.fase2?.doorsmeren || [];
-      if (isCloudMode.value) {
-        const docId = `${selectedCustomer.value}__${selectedDepartment.value}__${selectedContract.value}`.replace(/[\/\s]/g, '_');
-        await CloudDB.updateDoc('dossiers', docId, {
-          dossier_json: JSON.stringify(dossier.value)
-        });
+      if (isCloudMode) {
+        // Client-side herberekening voor standalone / GitHub Pages modus
+        const activeItems = doorsmerenItems.value.filter(it => it.enabled);
+        const dsTotal = Math.round(activeItems.reduce((s, it) => s + (it.line_total || 0), 0) * 100) / 100;
+        const dsHours = Math.round(activeItems.reduce((s, it) => s + (it.hours || 0), 0) * 100) / 100;
+        const wh = dossier.value.fase2.work_hours = dossier.value.fase2.work_hours || {};
+        const ps = dossier.value.fase2.proposal_summary = dossier.value.fase2.proposal_summary || {};
+        const hoursPerDay = parseFloat(wh.hours_per_day) || 8.0;
+        const dsDays = dsHours > 0 ? Math.ceil(dsHours / hoursPerDay) : 0;
+        const sumIlac = dossier.value.ilac_calculation?.summary || {};
+        const daysPerYr = parseFloat(sumIlac.auto_days_per_year) || parseFloat(wh.work_days_per_year) || 65;
+        const auditOneOffDays = parseInt(sumIlac.auto_one_off_days ?? wh.audit_one_off_days ?? 0) || 0;
+        const baseDaysY1 = daysPerYr + auditOneOffDays;
+        const daysY1 = baseDaysY1 + dsDays;
+        const years = parseInt(dossier.value.settings?.duration_years) || 3;
+        const totalMonths = years * 12;
+        const totalDays = daysY1 + daysPerYr * Math.max(0, years - 1);
+        const partnerRate = Math.round((parseFloat(wh.hourly_rate_partner) || 63.0) * (1 + (parseFloat(wh.partner_surcharge_pct) || 15.0) / 100.0) * 100) / 100;
+        const travelDay = parseFloat(wh.travel_cost_per_day) || Math.round(((parseFloat(wh.travel_km_per_day) || 76) * (parseFloat(wh.travel_rate_per_km) || 1.75)) * (1 + (parseFloat(wh.partner_surcharge_pct) || 15.0) / 100.0) * 100) / 100;
+        const partnerHours = totalDays * hoursPerDay;
+        const partnerHoursCost = Math.round(partnerHours * partnerRate * 100) / 100;
+        const travelTotal = Math.round(totalDays * travelDay * 100) / 100;
+        const execTotal = Math.round((partnerHoursCost + travelTotal) * 100) / 100;
+        const dsExecCost = Math.round(dsDays * (hoursPerDay * partnerRate + travelDay) * 100) / 100;
+
+        wh.work_days_year1 = daysY1;
+        wh.work_days_per_year = daysPerYr;
+        wh.audit_one_off_days = auditOneOffDays;
+        wh.doorsmeren_hours = dsHours;
+        wh.doorsmeren_days = dsDays;
+        wh.one_off_days = auditOneOffDays + dsDays;
+        workHoursForm.value = { ...workHoursForm.value, ...wh };
+
+        ps.doorsmeren_total = dsTotal;
+        ps.doorsmeren_hours = dsHours;
+        ps.doorsmeren_days = dsDays;
+        ps.doorsmeren_partner_hours = dsDays * hoursPerDay;
+        ps.doorsmeren_execution_cost = dsExecCost;
+        ps.doorsmeren_breakdown = activeItems.map(it => ({ ...it }));
+        ps.work_days_year1 = daysY1;
+        ps.work_days_per_year = daysPerYr;
+        ps.audit_one_off_days = auditOneOffDays;
+        ps.one_off_days = auditOneOffDays + dsDays;
+        ps.total_work_days = totalDays;
+        ps.partner_hours = partnerHours;
+        ps.partner_hours_cost = partnerHoursCost;
+        ps.travel_days = totalDays;
+        ps.travel_total_cost = travelTotal;
+        ps.total_execution_cost = execTotal;
+        ps.grand_contract_total = Math.round(((ps.products_total || 0) + dsTotal + (ps.hardware_total || 0) + execTotal + (ps.total_services_cost || 0)) * 100) / 100;
+        ps.base_monthly_fee = totalMonths > 0 ? Math.round((ps.grand_contract_total / totalMonths) * 100) / 100 : 0;
+        ps.total_monthly_fee = Math.round((ps.base_monthly_fee + (ps.surcharge_monthly || 0)) * 100) / 100;
+        ps.monthly_fee = ps.total_monthly_fee;
+
+        try {
+          const docId = `${selectedCustomer.value}__${selectedDepartment.value}__${selectedContract.value}`.replace(/[\/\s]/g, '_');
+          await CloudDB.updateDoc('dossiers', docId, {
+            dossier_json: JSON.stringify(dossier.value)
+          });
+        } catch (e) {
+          console.error('Cloud opslaan doorsmeren fout:', e);
+        }
         return;
       }
       try {
@@ -4384,6 +4477,9 @@ const app = createApp({
         const data = await res.json();
         if (res.ok && data.dossier) {
           dossier.value = data.dossier;
+          if (data.dossier.fase2 && data.dossier.fase2.work_hours) {
+            workHoursForm.value = { ...workHoursForm.value, ...data.dossier.fase2.work_hours };
+          }
         }
       } catch (e) {
         console.error('Fout bij opslaan doorsmeren:', e);
@@ -7137,6 +7233,8 @@ const app = createApp({
       // Doorsmeer-module (Fase 2)
       doorsmerenItems,
       updateDoorsmerenItem,
+      updateDoorsmerenHours,
+      resetDoorsmerenHours,
       saveDoorsmeren,
 
       // WYSIWYG & PDF Uitsluitingen

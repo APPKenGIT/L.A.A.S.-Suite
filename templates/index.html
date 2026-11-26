@@ -1334,13 +1334,20 @@
                   <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">Opstart / Jaar 1</span>
                 </h3>
                 <p class="text-xs text-slate-500">
-                  Geef per berekend smeermiddel aan of er extra verpakkingen benodigd zijn voor initiële doorsmering (leidingen vullen, startvoorraad). Kies tussen vaste stuks of een percentage van de berekende behoefte.
+                  Geef per berekend smeermiddel de extra verpakkingen (stuks of %) én de doorsmeertijd op (standaard 1x ILAC-ronde, vrij aanpasbaar). Tijd wordt apart afgerond op 8u-werkdagen in Jaar 1 zonder extra PM/supervisie.
                 </p>
               </div>
             </div>
-            <div class="flex items-center gap-2 bg-amber-50 border border-amber-200 px-4 py-2 rounded-xl shrink-0">
-              <span class="text-xs font-semibold text-amber-900">Totaal Doorsmeren:</span>
-              <span class="text-sm font-bold font-mono text-amber-950">€ {{ formatNum(proposalSummary.doorsmeren_total || 0) }}</span>
+            <div class="flex flex-wrap items-center gap-2 shrink-0">
+              <div class="flex items-center gap-1.5 bg-sky-50 border border-sky-200 px-3.5 py-2 rounded-xl">
+                <span class="text-xs font-semibold text-sky-900">Doorsmeertijd:</span>
+                <span class="text-sm font-bold font-mono text-sky-950">{{ formatNum(proposalSummary.doorsmeren_hours || 0) }} u</span>
+                <span class="text-[11px] font-bold text-sky-700 bg-white px-2 py-0.5 rounded-lg border border-sky-200">&rarr; {{ proposalSummary.doorsmeren_days || 0 }}d J1</span>
+              </div>
+              <div class="flex items-center gap-2 bg-amber-50 border border-amber-200 px-4 py-2 rounded-xl">
+                <span class="text-xs font-semibold text-amber-900">Producten J1:</span>
+                <span class="text-sm font-bold font-mono text-amber-950">€ {{ formatNum(proposalSummary.doorsmeren_total || 0) }}</span>
+              </div>
             </div>
           </div>
 
@@ -1349,29 +1356,30 @@
             <table class="w-full text-left text-xs">
               <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
                 <tr>
-                  <th class="py-2.5 px-3">Productnaam</th>
-                  <th class="py-2.5 px-3 text-center">Fase 1 Behoefte</th>
-                  <th class="py-2.5 px-3 text-center">Doorsmeren?</th>
-                  <th class="py-2.5 px-3 text-center">Invoermodus</th>
-                  <th class="py-2.5 px-3 text-center">Invoerwaarde</th>
-                  <th class="py-2.5 px-3">Verpakking</th>
-                  <th class="py-2.5 px-3 text-center">Extra Units</th>
-                  <th class="py-2.5 px-3 text-right">Kost Jaar 1</th>
+                  <th class="py-2.5 px-2.5">Productnaam</th>
+                  <th class="py-2.5 px-2 text-center">Fase 1</th>
+                  <th class="py-2.5 px-2 text-center">Doorsmeren?</th>
+                  <th class="py-2.5 px-2 text-center">Modus</th>
+                  <th class="py-2.5 px-2 text-center">Invoer</th>
+                  <th class="py-2.5 px-2">Verpakking</th>
+                  <th class="py-2.5 px-2 text-center">Extra Units</th>
+                  <th class="py-2.5 px-2 text-center">Doorsmeertijd (u)</th>
+                  <th class="py-2.5 px-2.5 text-right">Productkost J1</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100">
                 <tr v-for="item in doorsmerenItems" :key="item.combo_key" class="hover:bg-slate-50 transition" :class="item.enabled ? 'bg-amber-50/30' : ''">
                   <!-- Product info -->
-                  <td class="py-2.5 px-3">
+                  <td class="py-2.5 px-2.5">
                     <div class="font-bold text-slate-900">{{ item.product_name }}</div>
                     <div class="text-[10px] text-slate-400 font-mono">Art. {{ item.article_nr || '-' }} &bull; {{ item.category }}</div>
                   </td>
                   <!-- Base units from Fase 1 -->
-                  <td class="py-2.5 px-3 text-center font-mono text-slate-600">
-                    {{ item.base_units }} units
+                  <td class="py-2.5 px-2 text-center font-mono text-slate-600 whitespace-nowrap">
+                    {{ item.base_units }} st
                   </td>
                   <!-- Enabled switch -->
-                  <td class="py-2.5 px-3 text-center">
+                  <td class="py-2.5 px-2 text-center">
                     <label class="relative inline-flex items-center cursor-pointer">
                       <input 
                         type="checkbox" 
@@ -1383,7 +1391,7 @@
                     </label>
                   </td>
                   <!-- Mode switch (Units vs Percentage) -->
-                  <td class="py-2.5 px-3 text-center">
+                  <td class="py-2.5 px-2 text-center whitespace-nowrap">
                     <div v-if="item.enabled" class="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-0.5">
                       <button 
                         type="button" 
@@ -1405,7 +1413,7 @@
                     <span v-else class="text-slate-400 font-mono text-[11px]">-</span>
                   </td>
                   <!-- Input field -->
-                  <td class="py-2.5 px-3 text-center">
+                  <td class="py-2.5 px-2 text-center whitespace-nowrap">
                     <div v-if="item.enabled" class="flex items-center justify-center gap-1">
                       <input 
                         type="number" 
@@ -1414,19 +1422,19 @@
                         :step="item.mode === 'percentage' ? 5 : 1"
                         :value="item.input_val"
                         @change="updateDoorsmerenItem(item, 'input_val', Number($event.target.value) || 0)"
-                        class="w-16 text-center py-1 px-2 rounded-lg border border-slate-300 text-xs font-mono font-bold focus:ring-2 focus:ring-amber-400 focus:border-amber-500 outline-none"
+                        class="w-15 text-center py-1 px-1.5 rounded-lg border border-slate-300 text-xs font-mono font-bold focus:ring-2 focus:ring-amber-400 focus:border-amber-500 outline-none"
                       >
                       <span class="text-slate-500 font-mono text-[11px]">{{ item.mode === 'percentage' ? '%' : 'st' }}</span>
                     </div>
                     <span v-else class="text-slate-400 font-mono text-[11px]">-</span>
                   </td>
                   <!-- Packaging selection -->
-                  <td class="py-2.5 px-3">
+                  <td class="py-2.5 px-2">
                     <select 
                       v-if="item.enabled && item.candidate_packagings && item.candidate_packagings.length > 1"
                       :value="item.packaging"
                       @change="updateDoorsmerenItem(item, 'packaging', $event.target.value)"
-                      class="py-1 px-2 rounded-lg border border-slate-200 bg-white text-xs text-slate-800 focus:ring-1 focus:ring-amber-400 outline-none max-w-[180px]"
+                      class="py-1 px-2 rounded-lg border border-slate-200 bg-white text-xs text-slate-800 focus:ring-1 focus:ring-amber-400 outline-none max-w-[165px]"
                     >
                       <option v-for="cand in item.candidate_packagings" :key="cand.packaging_desc || cand.packaging" :value="cand.packaging_desc || cand.packaging">
                         {{ cand.packaging_desc || cand.packaging }} (€ {{ formatNum(cand.unit_price) }})
@@ -1440,11 +1448,40 @@
                     </span>
                   </td>
                   <!-- Calculated extra units -->
-                  <td class="py-2.5 px-3 text-center font-mono font-bold" :class="item.enabled ? 'text-amber-800 text-xs' : 'text-slate-400'">
+                  <td class="py-2.5 px-2 text-center font-mono font-bold whitespace-nowrap" :class="item.enabled ? 'text-amber-800 text-xs' : 'text-slate-400'">
                     {{ item.enabled ? item.extra_units + ' stuks' : '-' }}
                   </td>
+                  <!-- Doorsmeertijd (uren) -->
+                  <td class="py-2.5 px-2 text-center whitespace-nowrap">
+                    <div v-if="item.enabled" class="flex flex-col items-center gap-0.5">
+                      <div class="flex items-center justify-center gap-1">
+                        <input
+                          type="number"
+                          min="0"
+                          max="999"
+                          step="0.25"
+                          :value="item.hours"
+                          @change="updateDoorsmerenHours(item, $event.target.value)"
+                          class="w-16 text-center py-1 px-1.5 rounded-lg border text-xs font-mono font-bold focus:ring-2 focus:ring-sky-400 focus:border-sky-500 outline-none"
+                          :class="item.is_manual_hours ? 'border-sky-400 bg-sky-50/50 text-sky-900' : 'border-slate-300 bg-white text-slate-800'"
+                        >
+                        <span class="text-slate-500 font-mono text-[11px]">u</span>
+                        <button
+                          v-if="item.is_manual_hours"
+                          type="button"
+                          @click="resetDoorsmerenHours(item)"
+                          title="Herstel naar automatisch 1x ILAC-ronde voorstel"
+                          class="text-sky-600 hover:text-sky-800 font-bold text-xs px-1 cursor-pointer"
+                        >
+                          &#8634;
+                        </button>
+                      </div>
+                      <span class="text-[10px] text-slate-400 font-mono">1x ILAC: {{ formatNum(item.suggested_hours) }}u</span>
+                    </div>
+                    <span v-else class="text-slate-400 font-mono text-[10px]">1x: {{ formatNum(item.suggested_hours) }}u</span>
+                  </td>
                   <!-- Line total -->
-                  <td class="py-2.5 px-3 text-right font-mono font-bold" :class="item.enabled ? 'text-amber-900' : 'text-slate-400'">
+                  <td class="py-2.5 px-2.5 text-right font-mono font-bold whitespace-nowrap" :class="item.enabled ? 'text-amber-900' : 'text-slate-400'">
                     € {{ formatNum(item.line_total) }}
                   </td>
                 </tr>
@@ -1454,8 +1491,16 @@
                   <td colspan="7" class="py-2.5 px-3 text-right uppercase tracking-wider text-xs">
                     Subtotaal Doorsmeren &amp; Eerste Vulling (Eenmalig Jaar 1):
                   </td>
-                  <td class="py-2.5 px-3 text-right font-mono text-sm text-amber-950 font-bold">
+                  <td class="py-2.5 px-2 text-center font-mono text-xs text-sky-900 whitespace-nowrap">
+                    {{ formatNum(proposalSummary.doorsmeren_hours || 0) }} u ({{ proposalSummary.doorsmeren_days || 0 }}d J1)
+                  </td>
+                  <td class="py-2.5 px-2.5 text-right font-mono text-sm text-amber-950 font-bold whitespace-nowrap">
                     € {{ formatNum(proposalSummary.doorsmeren_total || 0) }}
+                  </td>
+                </tr>
+                <tr v-if="proposalSummary.doorsmeren_days > 0" class="bg-sky-50/70 border-t border-sky-100 text-[11px] font-normal text-sky-900">
+                  <td colspan="9" class="py-2 px-3 flex-wrap">
+                    &#9201; <strong>{{ proposalSummary.doorsmeren_days }} extra doorsmeer-werkdag(en)</strong> in Jaar 1 ({{ proposalSummary.doorsmeren_partner_hours }}u partner + {{ proposalSummary.doorsmeren_days }}x verplaatsing = <strong>€ {{ formatNum(proposalSummary.doorsmeren_execution_cost || 0) }}</strong>) zijn meegenomen onder <em>Uitvoering &amp; Werkuren Jaar 1</em> (zonder extra Interflon PM/supervisie).
                   </td>
                 </tr>
               </tfoot>
@@ -1492,7 +1537,7 @@
               <div class="grid grid-cols-2 gap-2 text-xs bg-white p-3 rounded-lg border border-slate-100">
                 <div>
                   <span class="text-slate-400 block text-[11px]">Werkdagen Jaar 1 (opstart):</span>
-                  <span class="font-bold text-slate-800">{{ workHoursForm.work_days_year1 || 0 }} dagen <span v-if="workHoursForm.one_off_days" class="text-[10px] text-emerald-600 font-normal">({{ workHoursForm.work_days_per_year }}d regulier + {{ workHoursForm.one_off_days }}d eenmalig)</span><span v-else class="text-[10px] text-emerald-600 font-normal">(berekend)</span></span>
+                  <span class="font-bold text-slate-800">{{ workHoursForm.work_days_year1 || 0 }} dagen <span v-if="workHoursForm.one_off_days || proposalSummary.doorsmeren_days" class="text-[10px] text-emerald-600 font-normal">({{ workHoursForm.work_days_per_year }}d regulier<template v-if="proposalSummary.audit_one_off_days"> + {{ proposalSummary.audit_one_off_days }}d audit eenmalig</template><template v-else-if="workHoursForm.one_off_days && !proposalSummary.doorsmeren_days"> + {{ workHoursForm.one_off_days }}d eenmalig</template><template v-if="proposalSummary.doorsmeren_days"> + {{ proposalSummary.doorsmeren_days }}d doorsmeren</template>)</span><span v-else class="text-[10px] text-emerald-600 font-normal">(berekend)</span></span>
                 </div>
                 <div>
                   <span class="text-slate-400 block text-[11px]">Werkdagen vervolgjaren:</span>
@@ -1530,7 +1575,7 @@
               <div class="grid grid-cols-2 gap-2 text-xs bg-white p-3 rounded-lg border border-slate-100">
                 <div>
                   <span class="text-slate-400 block text-[11px]">PM &amp; Werfsupervisie:</span>
-                  <span class="font-bold text-slate-800">{{ proposalSummary.pm_hours || 0 }}u PM / {{ proposalSummary.sup_hours || 0 }}u Sup</span>
+                  <span class="font-bold text-slate-800">{{ proposalSummary.pm_hours || 0 }}u PM / {{ proposalSummary.sup_hours || 0 }}u Sup <span v-if="proposalSummary.doorsmeren_days > 0" class="text-[10px] text-amber-700 font-normal">(excl. doorsmeerdagen)</span></span>
                 </div>
                 <div>
                   <span class="text-slate-400 block text-[11px]">Interflon regietarief:</span>
@@ -1579,7 +1624,7 @@
                 <span class="font-mono font-bold text-slate-900">€ {{ formatNum(proposalSummary.hardware_total) }}</span>
               </div>
               <div class="flex items-center justify-between py-1 border-b border-slate-200/60">
-                <span class="text-slate-600 font-medium">3. Uitvoering &amp; Werkuren (Partner uren + verplaatsingen):</span>
+                <span class="text-slate-600 font-medium">3. Uitvoering &amp; Werkuren (Partner uren + verplaatsingen)<span v-if="proposalSummary.doorsmeren_days > 0" class="text-[11px] text-sky-700 font-semibold"> (incl. {{ proposalSummary.doorsmeren_days }}d doorsmeren J1)</span>:</span>
                 <span class="font-mono font-bold text-slate-900">€ {{ formatNum(proposalSummary.total_execution_cost) }}</span>
               </div>
               <div class="flex items-center justify-between py-1 border-b border-slate-200/60">
@@ -2246,7 +2291,7 @@
                   Op verzoek van <strong>{{ dossier.customer }}</strong> is dit voorstel gebaseerd op het in beheer en verantwoordelijkheid uitbesteden aan Interflon. Interflon levert de uren voor smeertechnisch onderhoud via een gecertificeerde partner. Interflon voert met eigen mensen planning- en inspectiecontroles uit (project management 15%).
                 </p>
                 <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs font-mono grid grid-cols-3 gap-2 my-2">
-                  <div>1e jaar (opstart): <strong>{{ workHoursForm.work_days_year1 || 87 }} werkdagen</strong></div>
+                  <div>1e jaar (opstart): <strong>{{ workHoursForm.work_days_year1 || 87 }} werkdagen</strong><span v-if="proposalSummary.doorsmeren_days > 0" class="text-[10px] text-amber-700 block font-sans">(incl. {{ proposalSummary.doorsmeren_days }}d initiële doorsmering)</span></div>
                   <div>2e jaar: <strong>{{ workHoursForm.work_days_per_year || 65 }} werkdagen</strong></div>
                   <div>3e jaar: <strong>{{ workHoursForm.work_days_per_year || 65 }} werkdagen</strong></div>
                 </div>
@@ -2301,11 +2346,11 @@
                       <tr v-if="proposalSummary.doorsmeren_total > 0" class="hover:bg-amber-50 bg-amber-50/20">
                         <td class="py-2 px-4 font-bold text-amber-950 flex items-center gap-1.5">
                           <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                          <span>Eenmalig Doorsmeren &amp; Vulling (Jaar 1)</span>
+                          <span>Eenmalig Doorsmeren &amp; Vulling ( Producten Jaar 1 )</span>
                         </td>
-                        <td class="py-2 px-4 text-center font-mono text-slate-600">Eenmalig</td>
-                        <td class="py-2 px-4 text-right font-mono font-bold text-amber-900">€ {{ formatNum(proposalSummary.doorsmeren_total) }}</td>
-                        <td class="py-2 px-4 text-right font-mono text-slate-700">€ {{ formatNum(proposalSummary.doorsmeren_total / calcYears) }}</td>
+                        <td class="py-2 px-4 text-right font-mono font-bold text-amber-900">€ {{ formatNum(proposalSummary.doorsmeren_total / (calcYears * 12)) }}</td>
+                        <td class="py-2 px-4 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">Fixed (J1)</span></td>
+                        <td class="py-2 px-4 text-right font-mono text-slate-700">€ {{ formatNum(proposalSummary.doorsmeren_total) }}</td>
                       </tr>
                       <!-- Dynamic Rows for each Material Group Card from Fase 2 -->
                       <tr v-for="grp in proposalMaterialGroups" :key="grp.id" class="hover:bg-slate-50 bg-indigo-50/20">
@@ -2385,6 +2430,22 @@
                   </table>
                 </div>
                 <span class="text-[10px] text-slate-400 italic block">Fig. 3 &amp; Fig. 30 — Specificatie van het geadviseerde maandelijkse feebedrag</span>
+
+                <!-- Aparte rapportage van Doorsmeren per product + doorsmeertijd op het voorstel -->
+                <div v-if="proposalSummary.doorsmeren_breakdown && proposalSummary.doorsmeren_breakdown.length > 0" class="p-3.5 bg-amber-50/70 rounded-xl border border-amber-200 text-xs space-y-2 mt-2">
+                  <div class="flex flex-wrap items-center justify-between gap-2">
+                    <span class="font-bold text-amber-950">Specificatie Initiële Doorsmering &amp; Eerste Vulling (Opstart Jaar 1)</span>
+                    <span v-if="proposalSummary.doorsmeren_days > 0" class="font-mono text-[11px] text-sky-900 bg-white px-2.5 py-0.5 rounded-lg border border-amber-200">
+                      Arbeidstijd: <strong>{{ formatNum(proposalSummary.doorsmeren_hours) }} u</strong> &rarr; <strong>{{ proposalSummary.doorsmeren_days }} werkdag(en)</strong> inbegrepen in Jaar 1
+                    </span>
+                  </div>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                    <div v-for="ds in proposalSummary.doorsmeren_breakdown" :key="ds.combo_key || ds.product_name" class="flex items-center justify-between bg-white px-2.5 py-1.5 rounded-lg border border-amber-100 text-[11px]">
+                      <span class="font-semibold text-slate-800 truncate mr-2">{{ ds.product_name }} <span class="text-slate-500 font-normal">({{ ds.extra_units }}x {{ ds.packaging }}<template v-if="ds.hours"> &bull; {{ formatNum(ds.hours) }}u</template>)</span></span>
+                      <span class="font-mono font-bold text-amber-900 shrink-0">€ {{ formatNum(ds.line_total) }}</span>
+                    </div>
+                  </div>
+                </div>
 
                 <!-- Surcharge Transparency Box on Proposal Report for Invoicing / Customer Clarity -->
                 <div v-if="proposalSummary.surcharge_active" class="p-3.5 bg-amber-50 rounded-xl border border-amber-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-2">
@@ -5984,6 +6045,6 @@
 </div>
 
 <!-- Vue App Logic Script -->
-<script src="/static/js/app.js?v=20261117_01"></script>
+<script src="/static/js/app.js?v=20261126_02"></script>
 </body>
 </html>

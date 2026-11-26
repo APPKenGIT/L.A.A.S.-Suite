@@ -164,6 +164,47 @@ def get_dossier(klant, afdeling, contract_name=None):
     dossier = store.get_dossier(klant, afdeling, contract_name)
     if not dossier:
         return jsonify({"error": f"Contract niet gevonden voor {klant} / {afdeling}"}), 404
+
+    # Auto-sync naar line_total_v2 & single_pass_hours voor bestaande dossiers
+    ilac_calc = dossier.get('ilac_calculation') or {}
+    pts = ilac_calc.get('points') or []
+    cur_summary = ilac_calc.get('summary') or {}
+    agg_prods = ilac_calc.get('aggregated_products') or []
+    needs_time_sync = bool(pts) and (
+        cur_summary.get('time_calc_mode') != 'line_total_v2'
+        or (agg_prods and 'single_pass_hours' not in agg_prods[0])
+    )
+    if needs_time_sync:
+        settings = dossier.get('settings') or {}
+        years = int(settings.get('duration_years', 3))
+        g_factor = float(settings.get('gram_per_pompslag', 1.5))
+        ml_factor = float(settings.get('ml_per_second', 1.0))
+        pl_items = (dossier.get('price_list') or {}).get('items') or store.get_global_pricelist().get('items', [])
+        manual_items = ilac_calc.get('manual_items') or []
+        calc_res = calculate_ilac_requirements(
+            pts,
+            contract_years=years,
+            pricelist_items=pl_items,
+            manual_items=manual_items,
+            gram_per_pompslag=g_factor,
+            ml_per_second=ml_factor,
+            packaging_overrides=dossier.get('packaging_overrides', {}),
+            manual_product_overrides=dossier.get('manual_product_overrides', {}),
+            units_overrides=dossier.get('units_overrides', {}),
+            tier_overrides=dossier.get('tier_overrides', {}),
+            global_discount_pct=settings.get('global_discount_pct'),
+            category_discounts=settings.get('category_discounts', {})
+        )
+        dossier['ilac_calculation']['summary'] = calc_res['summary']
+        dossier['ilac_calculation']['aggregated_products'] = calc_res['aggregated_products']
+        is_locked_active = bool((dossier.get('tracking') or {}).get('is_active'))
+        locked_fee = settings.get('fee_per_month')
+        calculate_fase2_proposal(dossier)
+        if is_locked_active and locked_fee:
+            dossier['settings']['fee_per_month'] = locked_fee
+        con_name = contract_name or settings.get('contract_name') or dossier.get('contract_name', 'Standaard Contract')
+        store.save_dossier(klant, afdeling, con_name, dossier)
+
     return jsonify(dossier)
 
 @app.route('/api/dossier/<klant>/<afdeling>', methods=['POST'])

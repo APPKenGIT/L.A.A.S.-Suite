@@ -477,11 +477,11 @@ def calculate_ilac_requirements(points, contract_years=3, pricelist_items=None, 
             is_one_off_task = (interval_d >= contract_days - 0.5) if years > 1 else (interval_d > 365.5)
 
             if is_one_off_task:
-                one_off_execution_minutes += (mins * count)
+                one_off_execution_minutes += mins
                 if any(w in tname.lower() for w in ['analyse', 'staalname', 'staal', 'bemonstering']):
                     one_off_oil_analyses += count
             else:
-                recurring_execution_minutes_per_year += (mins * count * freq)
+                recurring_execution_minutes_per_year += (mins * freq)
                 if any(w in tname.lower() for w in ['analyse', 'staalname', 'staal', 'bemonstering']):
                     recurring_oil_analyses_per_year += (count * freq)
 
@@ -503,6 +503,7 @@ def calculate_ilac_requirements(points, contract_years=3, pricelist_items=None, 
                 'tool': tool,
                 'combo_key': combo_key,
                 'points_count': 0,
+                'single_pass_minutes': 0.0,
                 'annual_volume': 0.0,
                 'volume_unit': std_unit,
                 'tasks_summary': {},
@@ -511,6 +512,7 @@ def calculate_ilac_requirements(points, contract_years=3, pricelist_items=None, 
             }
             
         product_totals[combo_key]['points_count'] += count
+        product_totals[combo_key]['single_pass_minutes'] += mins
         
         for t in pt['tasks']:
             tname = t['task_name']
@@ -773,6 +775,8 @@ def calculate_ilac_requirements(points, contract_years=3, pricelist_items=None, 
             'product_name': prod_name,
             'tool': tool_name,
             'points_count': pdata['points_count'],
+            'single_pass_minutes': round(pdata['single_pass_minutes'], 1),
+            'single_pass_hours': round(pdata['single_pass_minutes'] / 60.0, 2),
             'annual_volume_display': ann_disp,
             'contract_volume_display': tot_disp,
             'annual_volume_numeric': pdata['annual_volume'],
@@ -857,9 +861,10 @@ def calculate_ilac_requirements(points, contract_years=3, pricelist_items=None, 
         'total_manual_cost': round(total_manual_cost, 2),
         'grand_total_phase1': round(total_products_cost + total_manual_cost, 2),
         'recurring_execution_minutes_per_year': round(recurring_execution_minutes_per_year, 1),
-        'recurring_execution_hours_per_year': round(total_annual_hours, 1),
+        'recurring_execution_hours_per_year': round(total_annual_hours, 2),
         'one_off_execution_minutes': round(one_off_execution_minutes, 1),
-        'one_off_execution_hours': round(one_off_hours, 1),
+        'one_off_execution_hours': round(one_off_hours, 2),
+        'time_calc_mode': 'line_total_v2',
         'auto_days_per_year': auto_days_per_year,
         'auto_one_off_days': auto_one_off_days,
         'auto_days_year1': auto_days_year1,
@@ -975,8 +980,19 @@ def calculate_fase2_proposal(dossier):
     # 2b. Doorsmeren & Initiële Vulling (Opstart / Jaar 1)
     doorsmeren_list = fase2.get('doorsmeren', [])
     doorsmeren_total = 0.0
+    doorsmeren_hours_total = 0.0
     doorsmeren_breakdown = []
     import math
+
+    agg_prods_list = dossier.get('ilac_calculation', {}).get('aggregated_products', [])
+    agg_single_pass_map = {}
+    for ap in agg_prods_list:
+        sp_hrs = float(ap.get('single_pass_hours') or 0.0)
+        if ap.get('combo_key'):
+            agg_single_pass_map[ap['combo_key']] = sp_hrs
+        if ap.get('product_name') and ap['product_name'] not in agg_single_pass_map:
+            agg_single_pass_map[ap['product_name']] = sp_hrs
+
     for item in doorsmeren_list:
         if item.get('enabled'):
             base_u = float(item.get('base_units') or 0.0)
@@ -989,6 +1005,16 @@ def calculate_fase2_proposal(dossier):
             u_price = float(item.get('unit_price') or item.get('base_unit_price') or 0.0)
             line_cost = round(extra_u * u_price, 2)
             doorsmeren_total += line_cost
+
+            ckey = item.get('combo_key') or item.get('product_name') or ''
+            suggested_hrs = round(float(agg_single_pass_map.get(ckey, agg_single_pass_map.get(item.get('product_name', ''), item.get('suggested_hours') or 0.0))), 2)
+            is_manual_hrs = bool(item.get('is_manual_hours', False))
+            if is_manual_hrs and item.get('hours') is not None:
+                item_hrs = max(0.0, round(float(item.get('hours') or 0.0), 2))
+            else:
+                item_hrs = suggested_hrs
+            doorsmeren_hours_total += item_hrs
+
             doorsmeren_breakdown.append({
                 'combo_key': item.get('combo_key'),
                 'product_name': item.get('product_name'),
@@ -999,15 +1025,21 @@ def calculate_fase2_proposal(dossier):
                 'base_units': base_u,
                 'extra_units': extra_u,
                 'unit_price': u_price,
-                'line_total': line_cost
+                'line_total': line_cost,
+                'suggested_hours': suggested_hrs,
+                'hours': item_hrs,
+                'is_manual_hours': is_manual_hrs
             })
     doorsmeren_total = round(doorsmeren_total, 2)
+    doorsmeren_hours = round(doorsmeren_hours_total, 2)
     
     # 3. Work hours parameters
     hourly_rate_partner = float(wh.get('hourly_rate_partner', 63.0))
     surcharge_pct = float(wh.get('partner_surcharge_pct', 15.0))
     partner_billed_rate = round(hourly_rate_partner * (1.0 + surcharge_pct / 100.0), 2)
     wh['partner_billed_rate'] = partner_billed_rate
+    hours_per_day = float(wh.get('hours_per_day', 8.0))
+    doorsmeren_days = int(math.ceil(doorsmeren_hours / hours_per_day)) if doorsmeren_hours > 0 and hours_per_day > 0 else 0
     
     summary = dossier.get('ilac_calculation', {}).get('summary', {})
 
@@ -1020,11 +1052,16 @@ def calculate_fase2_proposal(dossier):
     auto_one_off = summary.get('auto_one_off_days', 0)
     auto_y1 = summary.get('auto_days_year1')
     if auto_y1 is not None and auto_y1 > 0:
-        days_y1 = float(auto_y1)
+        base_days_y1 = float(auto_y1)
+        audit_one_off_days = int(auto_one_off or 0)
     else:
-        days_y1 = float(wh.get('work_days_year1', days_per_year + float(auto_one_off or 0)))
+        prev_ds_days = int(wh.get('doorsmeren_days', 0) or 0)
+        raw_y1 = float(wh.get('work_days_year1', days_per_year + float(auto_one_off or 0)))
+        base_days_y1 = max(days_per_year, raw_y1 - prev_ds_days)
+        audit_one_off_days = int(auto_one_off) if auto_one_off is not None else max(0, int(base_days_y1 - days_per_year))
 
-    one_off_days = int(auto_one_off) if auto_one_off is not None else max(0, int(days_y1 - days_per_year))
+    days_y1 = base_days_y1 + doorsmeren_days
+    one_off_days = audit_one_off_days + doorsmeren_days
 
     auto_analyses = summary.get('auto_oil_analyses_per_year')
     if auto_analyses is not None:
@@ -1034,11 +1071,13 @@ def calculate_fase2_proposal(dossier):
 
     wh['work_days_year1'] = int(days_y1)
     wh['work_days_per_year'] = int(days_per_year)
+    wh['audit_one_off_days'] = int(audit_one_off_days)
+    wh['doorsmeren_hours'] = doorsmeren_hours
+    wh['doorsmeren_days'] = int(doorsmeren_days)
     wh['one_off_days'] = int(one_off_days)
     wh['oil_analyses_per_year'] = int(analyses_per_year)
 
     total_days = days_y1 + (days_per_year * (years - 1)) if years > 1 else days_y1
-    hours_per_day = float(wh.get('hours_per_day', 8.0))
     total_partner_hours = total_days * hours_per_day
     partner_hours_cost = round(total_partner_hours * partner_billed_rate, 2)
     
@@ -1048,14 +1087,21 @@ def calculate_fase2_proposal(dossier):
     wh['travel_cost_per_day'] = travel_cost_per_day
     total_travel_cost = round(total_days * travel_cost_per_day, 2)
     total_execution_cost = round(partner_hours_cost + total_travel_cost, 2)
+
+    doorsmeren_partner_hours = round(doorsmeren_days * hours_per_day, 1)
+    doorsmeren_labor_cost = round(doorsmeren_partner_hours * partner_billed_rate, 2)
+    doorsmeren_travel_cost = round(doorsmeren_days * travel_cost_per_day, 2)
+    doorsmeren_execution_cost = round(doorsmeren_labor_cost + doorsmeren_travel_cost, 2)
     
-    # 4. Management & Guidance (Interflon)
+    # 4. Management & Guidance (Interflon) - ZONDER extra PM/supervisie over doorsmeer-uren
     interflon_rate = float(wh.get('interflon_hourly_rate', 110.0))
     pm_pct = float(wh.get('pm_pct', 15.0))
     sup_pct = float(wh.get('supervision_pct', 10.0))
     
-    pm_hours = round(total_partner_hours * (pm_pct / 100.0), 1)
-    sup_hours = round(total_partner_hours * (sup_pct / 100.0), 1)
+    pm_base_days = base_days_y1 + (days_per_year * (years - 1)) if years > 1 else base_days_y1
+    pm_base_partner_hours = pm_base_days * hours_per_day
+    pm_hours = round(pm_base_partner_hours * (pm_pct / 100.0), 1)
+    sup_hours = round(pm_base_partner_hours * (sup_pct / 100.0), 1)
     management_cost = round((pm_hours + sup_hours) * interflon_rate, 2)
     
     # 5. Analyses, Software, Training
@@ -1206,11 +1252,18 @@ def calculate_fase2_proposal(dossier):
         'products_total': products_cost,
         'products_annual': round(products_cost / years, 2),
         'doorsmeren_total': doorsmeren_total,
+        'doorsmeren_hours': doorsmeren_hours,
+        'doorsmeren_days': int(doorsmeren_days),
+        'doorsmeren_partner_hours': doorsmeren_partner_hours,
+        'doorsmeren_labor_cost': doorsmeren_labor_cost,
+        'doorsmeren_travel_cost': doorsmeren_travel_cost,
+        'doorsmeren_execution_cost': doorsmeren_execution_cost,
         'doorsmeren_breakdown': doorsmeren_breakdown,
         'hardware_total': hardware_cost,
         'hardware_annual': round(hardware_cost / years, 2),
         'work_days_year1': int(days_y1),
         'work_days_per_year': int(days_per_year),
+        'audit_one_off_days': int(audit_one_off_days),
         'one_off_days': int(one_off_days),
         'total_work_days': int(total_days),
         'partner_hours': total_partner_hours,

@@ -400,6 +400,34 @@ def recalculate_tracking_pnl(tracking, contract_settings=None, fase2=None, ilac_
         products_comp = new_comp
         tracking['products_comparison'] = products_comp
 
+    # Synchroniseer geactiveerde doorsmeren-producten als aparte post per product (Jaar 1)
+    if products_comp is not None and fase2 is not None:
+        ds_breakdown = fase2.get('proposal_summary', {}).get('doorsmeren_breakdown') or []
+        products_comp = [p for p in products_comp if not str(p.get('id', '')).startswith('prod_doorsmeer_')]
+        for ds_idx, ds in enumerate(ds_breakdown):
+            ds_val = round(float(ds.get('line_total') or 0.0), 2)
+            if ds_val > 0:
+                products_comp.append({
+                    'id': f"prod_doorsmeer_{ds_idx+1}",
+                    'product': f"{ds.get('product_name', 'Smeermiddel')} (Doorsmeren Jaar 1)",
+                    'category': 'Doorsmeren (Opstart)',
+                    'packaging': f"{ds.get('extra_units', 0)}x {ds.get('packaging', '')}".strip(),
+                    'j1_val': ds_val,
+                    'j2_val': 0.0,
+                    'j3_val': 0.0,
+                    'total_val': ds_val,
+                    'deliv_val': 0.0,
+                    'deliv_j1': 0.0,
+                    'deliv_j2': 0.0,
+                    'deliv_j3': 0.0,
+                    'in_fee_val': 0.0,
+                    'extra_val': 0.0,
+                    'diff_val': ds_val,
+                    'pct': 0.0,
+                    'status': 'Nog niet geleverd'
+                })
+        tracking['products_comparison'] = products_comp
+
     # Ensure deliveries are synchronized into products_comp
     if products_comp and deliveries:
         for p in products_comp:
